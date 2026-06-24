@@ -199,6 +199,27 @@
     .issue-list { display: grid; }
     .issue-item { width: 100%; padding: 8px 0; overflow: hidden; color: var(--text); text-align: left; background: transparent; border: 0; border-bottom: 1px solid var(--line); text-overflow: ellipsis; white-space: nowrap; }
     .issue-item:hover { color: var(--primary); background: var(--surface-soft); }
+    .issue-action-group { display: flex; flex: 0 0 auto; gap: 4px; }
+    .issue-action-btn {
+      min-width: 28px;
+      height: 26px;
+      padding: 0 7px;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--interactive-line);
+      border-radius: 6px;
+      box-shadow: none;
+      white-space: nowrap;
+    }
+    .issue-action-btn:hover { color: var(--primary); background: var(--primary-soft); box-shadow: none; }
+    .issue-list-icon { width: 14px; height: 14px; vertical-align: middle; }
+    .issue-write-btn { min-width: 54px; padding-inline: 6px; }
+    .issue-archive { padding: 14px 16px; }
+    .issue-archive-list { display: grid; }
+    .issue-archive-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; width: 100%; padding: 11px 4px; color: var(--text); text-align: left; background: transparent; border: 0; border-bottom: 1px solid var(--line); }
+    .issue-archive-item:hover { background: var(--surface-soft); }
+    .issue-archive-item strong, .issue-archive-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .issue-archive-item span { color: var(--sub); }
 
     .viewer { overflow: hidden; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
     .viewer-head {
@@ -341,11 +362,23 @@
       </div>
       <div class="issue-board">
         <div class="issue-group">
-          <div class="sidebar-section-head"><h3>이 달의 이슈사항</h3><button class="icon-btn" data-add-notice="monthly" title="이 달의 이슈 추가">+</button></div>
+          <div class="sidebar-section-head">
+            <h3>이 달의 이슈사항</h3>
+            <div class="issue-action-group">
+              <button class="issue-action-btn" data-show-notice-list="monthly" type="button" title="이 달의 이슈 전체 목록" aria-label="이 달의 이슈 전체 목록"><svg class="issue-list-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3.5h1M6 3.5h7M3 8h1M6 8h7M3 12.5h1M6 12.5h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+              <button class="issue-action-btn issue-write-btn" data-add-notice="monthly" type="button" title="이 달의 이슈 작성">+ 글쓰기</button>
+            </div>
+          </div>
           <div class="issue-list" id="monthlyIssueList"></div>
         </div>
         <div class="issue-group">
-          <div class="sidebar-section-head"><h3>이 주의 이슈사항(필독)</h3><button class="icon-btn" data-add-notice="weekly" title="이 주의 이슈 추가">+</button></div>
+          <div class="sidebar-section-head">
+            <h3>이 주의 이슈사항(필독)</h3>
+            <div class="issue-action-group">
+              <button class="issue-action-btn" data-show-notice-list="weekly" type="button" title="이 주의 이슈 전체 목록" aria-label="이 주의 이슈 전체 목록"><svg class="issue-list-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3.5h1M6 3.5h7M3 8h1M6 8h7M3 12.5h1M6 12.5h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+              <button class="issue-action-btn issue-write-btn" data-add-notice="weekly" type="button" title="이 주의 이슈 작성">+ 글쓰기</button>
+            </div>
+          </div>
           <div class="issue-list" id="weeklyIssueList"></div>
         </div>
       </div>
@@ -366,7 +399,7 @@
         </div>
       </section>
 
-      <section class="panel category-toolbar">
+      <section class="panel category-toolbar" id="categoryToolbar">
         <div class="category-toolbar-title"><strong>카테고리</strong><span class="muted">질문 분류</span></div>
         <select id="categoryFilter" aria-label="카테고리 선택"></select>
         <div class="category-toolbar-actions">
@@ -377,7 +410,15 @@
         </div>
       </section>
 
-      <section class="panel list-panel">
+      <section class="panel issue-archive hidden" id="issueArchivePanel">
+        <div class="list-title">
+          <strong id="issueArchiveTitle">이슈사항 전체 목록</strong>
+          <button class="btn btn-secondary" id="backToQuestionListBtn" type="button">질문 목록</button>
+        </div>
+        <div class="issue-archive-list" id="issueArchiveList"></div>
+      </section>
+
+      <section class="panel list-panel" id="questionListPanel">
         <div class="list-title">
           <strong>질문 목록</strong>
           <span class="muted" id="listInfo"></span>
@@ -564,7 +605,7 @@
       return sanitizeNoticeHtml(hasRichMarkup ? value : escapeHtml(value).replace(/\r?\n/g, '<br>'));
     }
 
-    const state = { categories: [], items: [], trashItems: [], notices: [], selectedCategoryId: 'all', selectedItemId: null, selectedNoticeId: null, search: '', page: 1, pageSize: 10, backend: 'local' };
+    const state = { categories: [], items: [], trashItems: [], notices: [], selectedCategoryId: 'all', selectedItemId: null, selectedNoticeId: null, noticeListType: null, search: '', page: 1, pageSize: 10, backend: 'local' };
     let pendingImageData = '';
     let pendingNoticeImageData = '';
     let pendingNoticeImagePath = '';
@@ -835,6 +876,36 @@
       document.querySelectorAll('[data-notice-id]').forEach(button => button.onclick = () => selectNotice(button.dataset.noticeId));
     }
 
+    function renderIssueArchive() {
+      const active = state.noticeListType === 'monthly' || state.noticeListType === 'weekly';
+      $('categoryToolbar').classList.toggle('hidden', active);
+      $('questionListPanel').classList.toggle('hidden', active);
+      $('issueArchivePanel').classList.toggle('hidden', !active);
+      if (!active) return;
+      const rows = state.notices
+        .filter(notice => notice.type === state.noticeListType)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      $('issueArchiveTitle').textContent = state.noticeListType === 'weekly' ? '이 주의 이슈사항(필독) 전체 목록' : '이 달의 이슈사항 전체 목록';
+      $('issueArchiveList').innerHTML = rows.length ? rows.map(notice => `
+        <button class="issue-archive-item" data-archive-notice="${notice.id}" type="button">
+          <strong>${escapeHtml(notice.title)}</strong>
+          <span>${escapeHtml(notice.author || '-')} · ${formatDate(notice.createdAt)}</span>
+        </button>`).join('') : '<div class="empty">등록된 이슈사항이 없습니다.</div>';
+      document.querySelectorAll('[data-archive-notice]').forEach(button => button.onclick = () => selectNotice(button.dataset.archiveNotice));
+    }
+
+    function showNoticeArchive(type) {
+      state.noticeListType = type;
+      renderIssueArchive();
+      $('issueArchivePanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function showQuestionList(scroll = true) {
+      state.noticeListType = null;
+      renderIssueArchive();
+      if (scroll) $('categoryToolbar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     function renderSidebarActivity() {
       const posts = [...state.items].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 4);
       $('recentPostList').innerHTML = posts.length ? posts.map(item => `<button class="mini-item" data-recent-item="${item.id}"><strong>${escapeHtml(item.question)}</strong><span>${formatDate(item.createdAt)}</span></button>`).join('') : '<span class="muted">등록된 글이 없습니다.</span>';
@@ -965,7 +1036,7 @@
         </div>`).join('') : '<div class="muted">등록된 댓글이 없습니다.</div>';
     }
 
-    function renderAll() { renderFilters(); renderCategories(); renderIssueLists(); renderSidebarActivity(); renderTable(); renderViewer(); renderRevisionHistory(selectedItem()); }
+    function renderAll() { renderFilters(); renderCategories(); renderIssueLists(); renderIssueArchive(); renderSidebarActivity(); renderTable(); renderViewer(); renderRevisionHistory(selectedItem()); }
 
     function updateAttachmentPreview() {
       if (pendingImageData) {
@@ -1009,6 +1080,7 @@
     }
 
     function selectItem(id) {
+      if (state.noticeListType) showQuestionList(false);
       state.selectedNoticeId = null;
       state.selectedItemId = id;
       const item = selectedItem();
@@ -1427,6 +1499,7 @@
       }
       state.search = '';
       state.selectedCategoryId = 'all';
+      state.noticeListType = null;
       state.page = 1;
       $('searchInput').value = '';
       closeCategoryModal();
@@ -1485,6 +1558,8 @@
     $('editCategoryBtn').onclick = editCategory;
     $('showAllBtn').onclick = openCategoryModal;
     document.querySelectorAll('[data-add-notice]').forEach(button => button.onclick = () => openNoticeModal(button.dataset.addNotice));
+    document.querySelectorAll('[data-show-notice-list]').forEach(button => button.onclick = () => showNoticeArchive(button.dataset.showNoticeList));
+    $('backToQuestionListBtn').onclick = () => showQuestionList();
     $('saveNoticeBtn').onclick = saveNotice;
     $('closeNoticeModalBtn').onclick = closeNoticeModal;
     $('noticeModalBackdrop').onclick = closeNoticeModal;
