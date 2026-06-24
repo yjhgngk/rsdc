@@ -213,7 +213,7 @@
     }
     .issue-action-btn:hover { color: var(--primary); background: var(--primary-soft); box-shadow: none; }
     .issue-list-icon { width: 14px; height: 14px; vertical-align: middle; }
-    .issue-write-btn { min-width: 54px; padding-inline: 6px; }
+    .issue-write-btn { min-width: 28px; padding-inline: 7px; }
     .issue-archive { padding: 14px 16px; }
     .issue-archive-list { display: grid; }
     .issue-archive-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; width: 100%; padding: 11px 4px; color: var(--text); text-align: left; background: transparent; border: 0; border-bottom: 1px solid var(--line); }
@@ -366,7 +366,7 @@
             <h3>이 달의 이슈사항</h3>
             <div class="issue-action-group">
               <button class="issue-action-btn" data-show-notice-list="monthly" type="button" title="이 달의 이슈 전체 목록" aria-label="이 달의 이슈 전체 목록"><svg class="issue-list-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3.5h1M6 3.5h7M3 8h1M6 8h7M3 12.5h1M6 12.5h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
-              <button class="issue-action-btn issue-write-btn" data-add-notice="monthly" type="button" title="이 달의 이슈 작성">+ 글쓰기</button>
+              <button class="issue-action-btn issue-write-btn" data-add-notice="monthly" type="button" title="이 달의 이슈 작성" aria-label="이 달의 이슈 작성">+</button>
             </div>
           </div>
           <div class="issue-list" id="monthlyIssueList"></div>
@@ -376,7 +376,7 @@
             <h3>이 주의 이슈사항(필독)</h3>
             <div class="issue-action-group">
               <button class="issue-action-btn" data-show-notice-list="weekly" type="button" title="이 주의 이슈 전체 목록" aria-label="이 주의 이슈 전체 목록"><svg class="issue-list-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3.5h1M6 3.5h7M3 8h1M6 8h7M3 12.5h1M6 12.5h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
-              <button class="issue-action-btn issue-write-btn" data-add-notice="weekly" type="button" title="이 주의 이슈 작성">+ 글쓰기</button>
+              <button class="issue-action-btn issue-write-btn" data-add-notice="weekly" type="button" title="이 주의 이슈 작성" aria-label="이 주의 이슈 작성">+</button>
             </div>
           </div>
           <div class="issue-list" id="weeklyIssueList"></div>
