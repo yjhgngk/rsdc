@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RSDC FAQ</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f4ed;
+      --panel: #fcfbf8;
+      --input: #f7f4ed;
+      --surface-soft: rgba(28, 28, 28, .035);
+      --line: #eceae4;
+      --interactive-line: rgba(28, 28, 28, .4);
+      --text: #1c1c1c;
+      --sub: #5f5f5d;
+      --primary: #1c1c1c;
+      --primary-active: #1c1c1c;
+      --primary-contrast: #fcfbf8;
+      --primary-soft: rgba(28, 28, 28, .055);
+      --story-block: var(--panel);
+      --story-ink: var(--text);
+      --story-line: var(--line);
+      --danger: #9d3d36;
+      --danger-soft: rgba(157, 61, 54, .08);
+      --success: #35634a;
+      --success-soft: rgba(53, 99, 74, .09);
+      --shadow: none;
+      --focus-shadow: rgba(0, 0, 0, .1) 0 4px 12px;
+      --button-shadow: rgba(255,255,255,.2) 0 .5px 0 inset, rgba(0,0,0,.2) 0 0 0 .5px inset, rgba(0,0,0,.05) 0 1px 2px;
+      --radius: 12px;
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #171715;
+      --panel: #1e1e1b;
+      --input: #242420;
+      --surface-soft: rgba(255, 255, 255, .045);
+      --line: rgba(244, 241, 232, .12);
+      --interactive-line: rgba(244, 241, 232, .34);
+      --text: #f4f1e8;
+      --sub: rgba(244, 241, 232, .62);
+      --primary: #f4f1e8;
+      --primary-active: #f4f1e8;
+      --primary-contrast: #1c1c1c;
+      --primary-soft: rgba(244, 241, 232, .09);
+      --story-block: var(--panel);
+      --story-ink: var(--text);
+      --story-line: var(--line);
+      --danger: #ef9c91;
+      --danger-soft: rgba(239, 156, 145, .1);
+      --success: #9bc9ad;
+      --success-soft: rgba(155, 201, 173, .1);
+      --focus-shadow: rgba(0,0,0,.4) 0 4px 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: "Camera Plain Variable", "Pretendard", ui-sans-serif, system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      font-size: 9pt;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+      background-image: radial-gradient(circle at 12% 4%, rgba(241, 177, 149, .12), transparent 28%), radial-gradient(circle at 88% 8%, rgba(130, 167, 205, .11), transparent 25%);
+      transition: color .2s ease, background-color .2s ease;
+      font-weight: 400;
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 250px minmax(540px, 1fr) 340px;
+      gap: 14px;
+      min-height: 100vh;
+      padding: 14px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar, .editor { padding: 16px; }
+    .sidebar { min-width: 0; overflow: hidden; }
+    .content { display: grid; align-content: start; gap: 12px; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1, h2, h3 { margin-bottom: 8px; font-weight: 600; letter-spacing: normal; }
+    .muted { color: var(--sub); }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+    }
+
+    .page-header h1 { margin: 0; letter-spacing: -.35px; }
+    .header-actions { display: flex; align-items: center; gap: 7px; }
+    .theme-toggle { border-radius: 9999px; }
+    .settings-button { width: 30px; padding: 0; border-radius: 9999px; }
+    :root[data-theme="dark"] body { background-image: radial-gradient(circle at 12% 4%, rgba(201, 122, 92, .08), transparent 28%), radial-gradient(circle at 88% 8%, rgba(101, 137, 173, .08), transparent 25%); }
+
+    .btn {
+      min-height: 30px;
+      padding: 6px 11px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: opacity .15s ease, box-shadow .15s ease, background-color .15s ease;
+    }
+
+    .btn:hover { box-shadow: var(--focus-shadow); }
+    .btn:active { opacity: .8; }
+    .btn-primary { color: var(--primary-contrast); background: var(--primary); box-shadow: var(--button-shadow); }
+    .btn-primary:active { background: var(--primary-active); }
+    .btn-secondary { color: var(--text); background: transparent; border-color: var(--interactive-line); }
+    .btn-danger { color: var(--danger); background: var(--danger-soft); border-color: var(--line); }
+    .btn-success { color: var(--success); background: var(--success-soft); border-color: var(--line); }
+
+    .search-panel { padding: 12px 16px; border-radius: var(--radius); box-shadow: none; }
+    .search-row { display: grid; grid-template-columns: 1fr 150px auto; gap: 8px; }
+    .search-panel input, .search-panel select { background: var(--input); border-color: var(--line); border-radius: 6px; }
+    .search-panel input:focus, .search-panel select:focus { border-color: rgba(59, 130, 246, .5); box-shadow: var(--focus-shadow), 0 0 0 2px rgba(59, 130, 246, .18); }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      color: var(--text);
+      background: var(--input);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      outline: none;
+    }
+
+    textarea { min-height: 90px; resize: vertical; line-height: 1.6; }
+    input:focus, select:focus, textarea:focus { border-color: rgba(59, 130, 246, .5); box-shadow: var(--focus-shadow), 0 0 0 2px rgba(59, 130, 246, .18); }
+
+    .category-list { display: grid; gap: 6px; margin-top: 14px; }
+    .category-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--input);
+      cursor: pointer;
+    }
+    .category-item.active { color: var(--text); border-color: var(--interactive-line); background: var(--primary-soft); font-weight: 600; }
+    .side-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; margin-top: 12px; }
+    .side-actions .btn { min-width: 0; padding-inline: 6px; white-space: nowrap; }
+    .sidebar-section { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .sidebar-section h3 { margin: 0; }
+    .sidebar-section h3, .list-title strong, .field label, th {
+      font-family: inherit;
+      font-weight: 600;
+      letter-spacing: normal;
+    }
+    .sidebar-section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+    .icon-btn { width: 24px; height: 24px; padding: 0; color: var(--text); background: var(--primary-soft); border: 1px solid var(--line); border-radius: 9999px; font-weight: 600; }
+    .mini-list { display: grid; gap: 0; min-width: 0; overflow: hidden; }
+    .mini-item {
+      display: block;
+      min-width: 0;
+      width: 100%;
+      padding: 9px 0;
+      overflow: hidden;
+      color: var(--text);
+      text-align: left;
+      background: transparent;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+    }
+    .mini-item:hover { color: var(--text); background: var(--surface-soft); }
+    .mini-item strong, .mini-item span { display: block; width: 100%; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mini-item span { margin-top: 3px; color: var(--sub); }
+    .issue-board { margin-top: 16px; }
+    .issue-group + .issue-group { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .issue-list { display: grid; }
+    .issue-item { width: 100%; padding: 8px 0; overflow: hidden; color: var(--text); text-align: left; background: transparent; border: 0; border-bottom: 1px solid var(--line); text-overflow: ellipsis; white-space: nowrap; }
+    .issue-item:hover { color: var(--primary); background: var(--surface-soft); }
+
+    .viewer { overflow: hidden; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+    .viewer-head {
+      display: grid;
+      grid-template-columns: 58px 1fr auto;
+      gap: 12px;
+      align-items: start;
+      padding: 15px 16px;
+      border-bottom: 1px solid var(--story-line);
+      background: var(--surface-soft);
+    }
+    .viewer-label { color: var(--text); font-weight: 600; }
+    .viewer-question { font-weight: 600; line-height: 1.6; white-space: pre-wrap; }
+    .viewer-meta { color: var(--sub); opacity: 1; white-space: nowrap; text-align: right; line-height: 1.6; }
+    .viewer-answer { display: grid; grid-template-columns: 58px 1fr; gap: 12px; min-height: 120px; padding: 18px 16px; line-height: 1.75; }
+    .viewer-answer-text { white-space: pre-wrap; }
+    .answer-image { display: block; max-width: min(100%, 680px); max-height: 440px; margin-top: 14px; border: 1px solid var(--line); border-radius: 9px; object-fit: contain; }
+    .viewer-empty { color: var(--sub); opacity: 1; }
+    .viewer-actions { display: flex; justify-content: flex-end; gap: 7px; padding: 0 16px 14px; }
+
+    .comments { margin: 0 16px 16px 86px; padding-top: 12px; border-top: 1px dashed var(--story-line); }
+    .comment-list { display: grid; gap: 7px; margin: 8px 0; }
+    .comment-item { padding: 9px 10px; color: var(--text); background: var(--surface-soft); border: 1px solid var(--line); border-radius: 8px; line-height: 1.5; }
+    .comment-meta { display: flex; justify-content: space-between; color: var(--sub); opacity: 1; margin-bottom: 4px; }
+    .comment-form { display: grid; grid-template-columns: 100px 1fr auto; gap: 7px; }
+    .hidden { display: none !important; }
+
+    .list-panel { padding: 14px 16px 16px; }
+    .list-title { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .table-wrap { overflow: auto; }
+    .pagination { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 5px; padding-top: 14px; }
+    .page-btn { min-width: 30px; height: 30px; padding: 0 8px; color: var(--text); background: transparent; border: 1px solid var(--line); border-radius: 6px; }
+    .page-btn:hover { border-color: var(--interactive-line); box-shadow: var(--focus-shadow); }
+    .page-btn.active { color: var(--primary-contrast); background: var(--primary); border-color: var(--primary); box-shadow: var(--button-shadow); }
+    .page-btn:disabled { cursor: default; opacity: .35; box-shadow: none; }
+    .page-ellipsis { padding: 0 3px; color: var(--sub); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 9px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--sub); background: var(--surface-soft); position: sticky; top: 0; }
+    tbody tr { cursor: pointer; }
+    tbody tr:hover td { background: var(--surface-soft); }
+    tbody tr.active td { background: var(--primary-soft); }
+    .empty { padding: 24px; text-align: center; color: var(--sub); }
+
+    .editor-grid { display: grid; gap: 10px; }
+    .editor-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .editor-heading h2 { margin: 0; }
+    .attachment-preview { display: grid; gap: 7px; padding: 9px; background: var(--surface-soft); border: 1px dashed var(--line); border-radius: 8px; }
+    .attachment-preview img { max-width: 100%; max-height: 220px; object-fit: contain; border-radius: 7px; }
+    .editor.expanded { position: fixed; z-index: 51; inset: 24px; width: min(900px, calc(100vw - 48px)); margin: auto; overflow: auto; }
+    .editor.expanded textarea { min-height: 180px; }
+    .backdrop { position: fixed; z-index: 50; inset: 0; background: rgba(15, 15, 14, .62); backdrop-filter: blur(3px); }
+    .modal { position: fixed; z-index: 61; inset: 50% auto auto 50%; width: min(520px, calc(100vw - 32px)); max-height: 78vh; padding: 20px; overflow: auto; transform: translate(-50%, -50%); box-shadow: var(--focus-shadow); }
+    .modal-backdrop { z-index: 60; }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .modal-head h2 { margin: 0; }
+    .modal-category-list { display: grid; gap: 6px; }
+    .modal-category-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 7px; }
+    .modal-category-row .category-item { width: 100%; }
+    .activity-detail-list { display: grid; gap: 0; }
+    .activity-detail-item { width: 100%; padding: 12px 2px; text-align: left; color: var(--text); background: transparent; border: 0; border-bottom: 1px solid var(--line); }
+    .activity-detail-item:hover { background: var(--surface-soft); }
+    .activity-detail-item strong, .activity-detail-item span, .activity-detail-item p { display: block; margin: 0; }
+    .activity-detail-item span { margin-top: 4px; color: var(--sub); }
+    .activity-detail-item p { margin-top: 7px; color: var(--sub); line-height: 1.55; }
+    .settings-modal { width: min(640px, calc(100vw - 32px)); }
+    .settings-tabs { display: flex; gap: 6px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+    .settings-tab.active { color: var(--primary-contrast); background: var(--primary); box-shadow: var(--button-shadow); }
+    .trash-list { display: grid; gap: 8px; }
+    .trash-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--line); }
+    .trash-item strong, .trash-item span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .trash-item span { margin-top: 4px; color: var(--sub); }
+    .settings-panel { min-height: 120px; }
+    .config-grid { display: grid; gap: 10px; }
+    .config-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+    .connection-status { padding: 10px; color: var(--sub); background: var(--surface-soft); border-radius: 8px; line-height: 1.55; }
+    .connection-status.connected { color: var(--success); }
+    .connection-status.error { color: var(--danger); }
+    .field { display: grid; gap: 5px; }
+    .field label { color: var(--sub); font-weight: 600; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .category-input-row { display: grid; grid-template-columns: 1fr; gap: 7px; }
+    .category-input-row.custom-active { grid-template-columns: minmax(120px, .8fr) minmax(140px, 1fr) auto; }
+    .editor-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .editor-note { padding: 10px; color: var(--sub); line-height: 1.6; background: var(--surface-soft); border-radius: 8px; }
+    .revision-panel { padding-top: 12px; border-top: 1px solid var(--line); }
+    .revision-panel h3 { margin-bottom: 7px; }
+    .revision-list { display: grid; gap: 0; }
+    .revision-row { display: grid; grid-template-columns: 90px 1fr auto; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+    .revision-row strong { color: var(--text); }
+    .revision-final { padding: 2px 7px; color: var(--primary-contrast); background: var(--primary); border-radius: 999px; }
+
+    @media (max-width: 1180px) {
+      .app { grid-template-columns: 220px 1fr; }
+      .editor { grid-column: 1 / -1; }
+    }
+    @media (max-width: 760px) {
+      .app { display: block; padding: 8px; }
+      .app > * { margin-bottom: 8px; }
+      .search-panel { border-radius: var(--radius); }
+      .search-row, .comment-form { grid-template-columns: 1fr; }
+      .category-input-row.custom-active { grid-template-columns: 1fr; }
+      .viewer-head { grid-template-columns: 48px 1fr; }
+      .viewer-meta { grid-column: 2; text-align: left; }
+      .viewer-answer { grid-template-columns: 48px 1fr; }
+      .viewer-actions, .comments { margin-left: 0; padding-left: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="panel sidebar">
+      <h2>카테고리</h2>
+      <p class="muted">질문을 분류해서 빠르게 찾아보세요.</p>
+      <div class="side-actions">
+        <button class="btn btn-primary" id="addCategoryBtn">추가</button>
+        <button class="btn btn-secondary" id="editCategoryBtn">수정</button>
+        <button class="btn btn-secondary" id="showAllBtn">전체</button>
+      </div>
+      <div class="issue-board">
+        <div class="issue-group">
+          <div class="sidebar-section-head"><h3>이 달의 이슈사항</h3><button class="icon-btn" data-add-notice="monthly" title="이 달의 이슈 추가">+</button></div>
+          <div class="issue-list" id="monthlyIssueList"></div>
+        </div>
+        <div class="issue-group">
+          <div class="sidebar-section-head"><h3>이 주의 이슈사항(필독)</h3><button class="icon-btn" data-add-notice="weekly" title="이 주의 이슈 추가">+</button></div>
+          <div class="issue-list" id="weeklyIssueList"></div>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-head"><h3>최근 추가된 글</h3><button class="icon-btn" id="recentPostMoreBtn" title="최근 글 자세히 보기">+</button></div>
+        <div class="mini-list" id="recentPostList"></div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-head"><h3>최신 댓글</h3><button class="icon-btn" id="recentCommentMoreBtn" title="최신 댓글 자세히 보기">+</button></div>
+        <div class="mini-list" id="recentCommentList"></div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <section class="panel page-header">
+        <div>
+          <h1>RSDC FAQ</h1>
+          <span class="muted">자주 묻는 질문 관리</span>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary settings-button" id="settingsBtn" type="button" aria-label="휴지통 열기" title="휴지통">🗑</button>
+          <button class="btn btn-secondary theme-toggle" id="themeToggleBtn" type="button" aria-label="화면 테마 변경"><span id="themeIcon">◐</span> <span id="themeLabel">다크 모드</span></button>
+          <button class="btn btn-primary" id="newItemBtn">새로고침</button>
+        </div>
+      </section>
+
+      <section class="panel search-panel">
+        <div class="search-row">
+          <input type="text" id="searchInput" placeholder="질문 또는 답변 검색">
+          <select id="categoryFilter"></select>
+          <button class="btn btn-secondary" id="resetFilterBtn">초기화</button>
+        </div>
+      </section>
+
+      <section class="panel viewer" id="viewerPanel">
+        <div class="viewer-head">
+          <div class="viewer-label" id="viewQuestionLabel">질문</div>
+          <div class="viewer-question viewer-empty" id="viewQuestion">아래 목록에서 질문을 선택해 주세요.</div>
+          <div class="viewer-meta" id="viewMeta">작성자 -<br>작성일시 -<br>최종 수정일시 -</div>
+        </div>
+        <div class="viewer-answer">
+          <div class="viewer-label" id="viewAnswerLabel">답변</div>
+          <div>
+            <div class="viewer-answer-text viewer-empty" id="viewAnswer">선택한 질문의 답변이 여기에 표시됩니다.</div>
+            <img class="answer-image hidden" id="viewAnswerImage" alt="답변 첨부 이미지">
+          </div>
+        </div>
+        <div class="viewer-actions" id="viewerActions">
+          <button class="btn btn-secondary" id="viewerEditBtn">수정</button>
+          <button class="btn btn-danger" id="viewerDeleteBtn">삭제</button>
+        </div>
+        <div class="comments" id="commentArea">
+          <strong>댓글</strong>
+          <div class="comment-list" id="commentList"></div>
+          <div class="comment-form">
+            <input type="text" id="commentAuthor" placeholder="작성자">
+            <input type="text" id="commentText" placeholder="댓글을 입력해 주세요">
+            <button class="btn btn-primary" id="addCommentBtn">등록</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel list-panel">
+        <div class="list-title">
+          <strong>질문 목록</strong>
+          <span class="muted" id="listInfo"></span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>카테고리</th><th>질문</th><th>작성자</th><th>작성일시</th></tr></thead>
+            <tbody id="itemTableBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </section>
+    </main>
+
+    <aside class="panel editor" id="editorPanel">
+      <div class="editor-heading">
+        <h2 id="editorTitle">질문 추가</h2>
+        <button class="btn btn-secondary" id="expandEditorBtn">크게 보기</button>
+      </div>
+      <p class="muted">내용을 작성한 뒤 저장해 주세요.</p>
+      <div class="editor-grid">
+        <div class="field">
+          <label for="itemCategory">카테고리</label>
+          <div class="category-input-row" id="categoryInputRow">
+            <select id="itemCategory"></select>
+            <input class="hidden" type="text" id="customCategoryName" placeholder="새 카테고리 이름">
+            <button class="btn btn-primary hidden" type="button" id="confirmCustomCategoryBtn">추가</button>
+          </div>
+        </div>
+        <div class="field"><label for="editorName">작성자</label><input type="text" id="editorName" placeholder="이름"></div>
+        <div class="field"><label for="itemQuestion">질문</label><textarea id="itemQuestion" placeholder="질문을 입력하세요"></textarea></div>
+        <div class="field"><label for="itemAnswer">답변</label><textarea id="itemAnswer" placeholder="답변을 입력하세요"></textarea><span class="muted">답변 입력창에 이미지를 붙여넣으면 자동으로 첨부됩니다.</span></div>
+        <div class="field">
+          <label for="answerImageInput">답변 이미지 첨부</label>
+          <input type="file" id="answerImageInput" accept="image/*">
+          <div class="attachment-preview hidden" id="attachmentPreview">
+            <img id="attachmentPreviewImage" alt="첨부 이미지 미리보기">
+            <button class="btn btn-danger" id="removeImageBtn" type="button">첨부 이미지 삭제</button>
+          </div>
+        </div>
+        <div class="editor-actions">
+          <button class="btn btn-primary" id="saveItemBtn">저장</button>
+          <button class="btn btn-secondary" id="clearFormBtn">새로 작성</button>
+        </div>
+        <div class="editor-note" id="editorStatus">새 질문을 등록할 수 있습니다.</div>
+        <div class="revision-panel">
+          <h3>수정 이력</h3>
+          <div class="revision-list" id="revisionHistoryList"><span class="muted">질문을 선택하면 수정 이력이 표시됩니다.</span></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="backdrop hidden" id="editorBackdrop"></div>
+  <div class="backdrop modal-backdrop hidden" id="categoryModalBackdrop"></div>
+  <section class="panel modal hidden" id="categoryModal" role="dialog" aria-modal="true" aria-labelledby="categoryModalTitle">
+    <div class="modal-head">
+      <h2 id="categoryModalTitle">전체 카테고리</h2>
+      <button class="btn btn-secondary" id="closeCategoryModalBtn">닫기</button>
+    </div>
+    <div class="modal-category-list" id="modalCategoryList"></div>
+  </section>
+  <div class="backdrop modal-backdrop hidden" id="activityModalBackdrop"></div>
+  <section class="panel modal hidden" id="activityModal" role="dialog" aria-modal="true" aria-labelledby="activityModalTitle">
+    <div class="modal-head">
+      <h2 id="activityModalTitle">최근 내역</h2>
+      <button class="btn btn-secondary" id="closeActivityModalBtn">닫기</button>
+    </div>
+    <div class="activity-detail-list" id="activityModalList"></div>
+  </section>
+  <div class="backdrop modal-backdrop hidden" id="settingsModalBackdrop"></div>
+  <section class="panel modal settings-modal hidden" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+    <div class="modal-head">
+      <h2 id="settingsModalTitle">설정</h2>
+      <button class="btn btn-secondary" id="closeSettingsModalBtn">닫기</button>
+    </div>
+    <div class="settings-tabs">
+      <button class="btn settings-tab active" type="button" data-settings-tab="trash">휴지통</button>
+      <button class="btn settings-tab" type="button" data-settings-tab="supabase">Supabase</button>
+    </div>
+    <div class="settings-panel" id="trashSettingsPanel">
+      <div class="trash-list" id="trashList"></div>
+    </div>
+    <div class="settings-panel hidden" id="supabaseSettingsPanel">
+      <div class="config-grid">
+        <div class="field"><label for="supabaseUrlInput">Project URL</label><input type="text" id="supabaseUrlInput" placeholder="https://xxxxx.supabase.co"></div>
+        <div class="field"><label for="supabaseKeyInput">Publishable 또는 anon key</label><input type="password" id="supabaseKeyInput" placeholder="sb_publishable_... 또는 eyJ..."></div>
+        <div class="config-actions">
+          <button class="btn btn-primary" id="saveSupabaseConfigBtn" type="button">연결 저장</button>
+          <button class="btn btn-secondary" id="uploadLocalDataBtn" type="button">현재 로컬 데이터 업로드</button>
+          <button class="btn btn-danger" id="disconnectSupabaseBtn" type="button">연결 해제</button>
+        </div>
+        <div class="connection-status" id="supabaseStatus">Supabase가 연결되지 않았습니다.</div>
+      </div>
+    </div>
+  </section>
+  <div class="backdrop modal-backdrop hidden" id="noticeModalBackdrop"></div>
+  <section class="panel modal hidden" id="noticeModal" role="dialog" aria-modal="true" aria-labelledby="noticeModalTitle">
+    <div class="modal-head">
+      <h2 id="noticeModalTitle">이슈 공지사항 추가</h2>
+      <button class="btn btn-secondary" id="closeNoticeModalBtn" type="button">닫기</button>
+    </div>
+    <div class="config-grid">
+      <div class="field"><label for="noticeType">구분</label><select id="noticeType"><option value="monthly">이 달의 이슈사항</option><option value="weekly">이 주의 이슈사항(필독)</option></select></div>
+      <div class="field"><label for="noticeAuthor">작성자</label><input type="text" id="noticeAuthor" placeholder="이름"></div>
+      <div class="field"><label for="noticeTitle">제목</label><input type="text" id="noticeTitle" placeholder="공지 제목"></div>
+      <div class="field"><label for="noticeContent">내용</label><textarea id="noticeContent" placeholder="공지 내용을 입력하세요"></textarea></div>
+      <button class="btn btn-primary" id="saveNoticeBtn" type="button">저장</button>
+    </div>
+  </section>
+
+  <script src="./supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const STORAGE = 'rsdc_faq_items_v2';
+    const CATEGORY_STORAGE = 'rsdc_faq_categories_v2';
+    const TRASH_STORAGE = 'rsdc_faq_trash_v1';
+    const NOTICE_STORAGE = 'rsdc_faq_notices_v1';
+    const THEME_STORAGE = 'rsdc_faq_theme_v1';
+    const SUPABASE_CONFIG_STORAGE = 'rsdc_supabase_config_v1';
+    const $ = id => document.getElementById(id);
+    const makeId = prefix => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const nowISO = () => new Date().toISOString();
+    const formatDate = iso => iso ? new Date(iso).toLocaleString('ko-KR') : '-';
+    const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+
+    const state = { categories: [], items: [], trashItems: [], notices: [], selectedCategoryId: 'all', selectedItemId: null, selectedNoticeId: null, search: '', page: 1, pageSize: 10, backend: 'local' };
+    let pendingImageData = '';
+    let supabaseClient = null;
+    let syncQueue = Promise.resolve();
+
+    function applyTheme(theme) {
+      const nextTheme = theme === 'dark' ? 'dark' : 'light';
+      document.documentElement.dataset.theme = nextTheme;
+      $('themeIcon').textContent = nextTheme === 'dark' ? '☀' : '◐';
+      $('themeLabel').textContent = nextTheme === 'dark' ? '라이트 모드' : '다크 모드';
+      $('themeToggleBtn').setAttribute('aria-pressed', String(nextTheme === 'dark'));
+    }
+
+    function toggleTheme() {
+      const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      localStorage.setItem(THEME_STORAGE, nextTheme);
+      applyTheme(nextTheme);
+    }
+
+    function seedData() {
+      const categories = [
+        { id: 'cat_apply', name: '원서접수' },
+        { id: 'cat_exam', name: '시험 안내' },
+        { id: 'cat_score', name: '성적 발표' },
+        { id: 'cat_common', name: '공통 안내' }
+      ];
+      const createdAt = nowISO();
+      const items = [
+        { id: makeId('faq'), categoryId: 'cat_apply', question: '원서접수 기간은 언제인가요?', answer: '접수 일정은 공지사항에서 확인할 수 있습니다. 마감일에는 접속이 몰릴 수 있으니 미리 접수해 주세요.', author: 'RSDC 운영팀', createdAt, updatedAt: createdAt, comments: [] },
+        { id: makeId('faq'), categoryId: 'cat_exam', question: '시험 장소는 어디에서 확인하나요?', answer: '접수 완료 후 마이페이지의 시험 정보에서 시험 장소와 입실 시간을 확인할 수 있습니다.', author: 'RSDC 운영팀', createdAt, updatedAt: createdAt, comments: [] },
+        { id: makeId('faq'), categoryId: 'cat_score', question: '성적표를 출력할 수 있나요?', answer: '성적 발표 이후 마이페이지에서 성적표 조회 및 인쇄가 가능합니다.', author: 'RSDC 운영팀', createdAt, updatedAt: createdAt, comments: [] }
+      ];
+      localStorage.setItem(CATEGORY_STORAGE, JSON.stringify(categories));
+      localStorage.setItem(STORAGE, JSON.stringify(items));
+    }
+
+    function normalizeItem(item) {
+      const revisionHistory = Array.isArray(item.revisionHistory) ? [...item.revisionHistory] : [];
+      if (!revisionHistory.length && item.createdAt) revisionHistory.push({ at: item.createdAt });
+      if (item.updatedAt && item.updatedAt !== item.createdAt && !revisionHistory.some(entry => entry.at === item.updatedAt)) {
+        revisionHistory.push({ at: item.updatedAt });
+      }
+      return { ...item, comments: item.comments || [], imageData: item.imageData || '', imagePath: item.imagePath || '', revisionHistory };
+    }
+
+    function loadLocalData() {
+      if (!localStorage.getItem(STORAGE) || !localStorage.getItem(CATEGORY_STORAGE)) seedData();
+      state.categories = JSON.parse(localStorage.getItem(CATEGORY_STORAGE) || '[]');
+      state.items = JSON.parse(localStorage.getItem(STORAGE) || '[]').map(normalizeItem);
+      state.trashItems = JSON.parse(localStorage.getItem(TRASH_STORAGE) || '[]');
+      state.notices = JSON.parse(localStorage.getItem(NOTICE_STORAGE) || '[]');
+    }
+
+    function persistLocalData() {
+      localStorage.setItem(CATEGORY_STORAGE, JSON.stringify(state.categories));
+      localStorage.setItem(STORAGE, JSON.stringify(state.items));
+      localStorage.setItem(TRASH_STORAGE, JSON.stringify(state.trashItems));
+      localStorage.setItem(NOTICE_STORAGE, JSON.stringify(state.notices));
+    }
+
+    function getSupabaseConfig() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(SUPABASE_CONFIG_STORAGE) || 'null');
+        return saved?.url && saved?.key ? saved : (window.RSDC_SUPABASE_CONFIG || null);
+      } catch { return window.RSDC_SUPABASE_CONFIG || null; }
+    }
+
+    function configureSupabaseClient(config = getSupabaseConfig()) {
+      if (!config?.url || !config?.key || !window.supabase?.createClient) {
+        supabaseClient = null;
+        state.backend = 'local';
+        return false;
+      }
+      supabaseClient = window.supabase.createClient(config.url, config.key, { auth: { persistSession: false } });
+      return true;
+    }
+
+    function rowToItem(row) {
+      return normalizeItem({
+        id: row.id,
+        categoryId: row.category_id || '',
+        question: row.question,
+        answer: row.answer,
+        author: row.author,
+        imageData: row.image_url || '',
+        imagePath: row.image_path || '',
+        comments: row.comments || [],
+        revisionHistory: row.revision_history || [],
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      });
+    }
+
+    function itemToRow(item, deleted = false) {
+      return {
+        id: item.id,
+        category_id: item.categoryId || null,
+        question: item.question,
+        answer: item.answer,
+        author: item.author,
+        image_url: item.imageData || null,
+        image_path: item.imagePath || null,
+        comments: item.comments || [],
+        revision_history: item.revisionHistory || [],
+        created_at: item.createdAt,
+        updated_at: item.updatedAt,
+        is_deleted: deleted,
+        deleted_at: deleted ? item.deletedAt : null,
+        deleted_category: deleted ? item.deletedCategory : null,
+        trash_id: deleted ? item.trashId : null
+      };
+    }
+
+    async function loadRemoteData(preserveLocalIfEmpty = false) {
+      const [{ data: categories, error: categoryError }, { data: rows, error: itemError }, { data: notices, error: noticeError }] = await Promise.all([
+        supabaseClient.from('rsdc_faq_categories').select('*').order('created_at'),
+        supabaseClient.from('rsdc_faq_items').select('*').order('updated_at', { ascending: false }),
+        supabaseClient.from('rsdc_faq_notices').select('*').order('created_at', { ascending: false })
+      ]);
+      if (categoryError) throw categoryError;
+      if (itemError) throw itemError;
+      if (noticeError) throw noticeError;
+      if (preserveLocalIfEmpty && !(categories || []).length && !(rows || []).length && !(notices || []).length && (state.categories.length || state.items.length || state.trashItems.length || state.notices.length)) {
+        state.backend = 'supabase';
+        updateSupabaseStatus('Supabase 연결됨 · DB가 비어 있습니다. 로컬 데이터 업로드 버튼을 눌러 주세요.', 'connected');
+        return false;
+      }
+      state.categories = (categories || []).map(row => ({ id: row.id, name: row.name }));
+      state.items = (rows || []).filter(row => !row.is_deleted).map(rowToItem);
+      state.trashItems = (rows || []).filter(row => row.is_deleted).map(row => ({
+        ...rowToItem(row),
+        trashId: row.trash_id || makeId('trash'),
+        deletedAt: row.deleted_at,
+        deletedCategory: row.deleted_category
+      }));
+      state.notices = (notices || []).map(row => ({ id: row.id, type: row.notice_type, title: row.title, content: row.content, author: row.author, createdAt: row.created_at, updatedAt: row.updated_at }));
+      state.backend = 'supabase';
+      persistLocalData();
+      return true;
+    }
+
+    async function loadData() {
+      loadLocalData();
+      if (!configureSupabaseClient()) return;
+      try {
+        await loadRemoteData(true);
+      } catch (error) {
+        state.backend = 'local';
+        updateSupabaseStatus(`연결 실패: ${error.message || error}`, 'error');
+      }
+    }
+
+    async function syncRemoteSnapshot() {
+      if (!supabaseClient || state.backend !== 'supabase') return;
+      const categoryRows = state.categories.map(category => ({ id: category.id, name: category.name }));
+      if (categoryRows.length) {
+        const { error } = await supabaseClient.from('rsdc_faq_categories').upsert(categoryRows, { onConflict: 'id' });
+        if (error) throw error;
+      }
+      const { data: remoteCategories, error: readCategoryError } = await supabaseClient.from('rsdc_faq_categories').select('id');
+      if (readCategoryError) throw readCategoryError;
+      for (const remoteCategory of remoteCategories || []) {
+        if (!state.categories.some(category => category.id === remoteCategory.id)) {
+          const { error } = await supabaseClient.from('rsdc_faq_categories').delete().eq('id', remoteCategory.id);
+          if (error) throw error;
+        }
+      }
+      const itemRows = [
+        ...state.items.map(item => itemToRow(item, false)),
+        ...state.trashItems.map(item => itemToRow(item, true))
+      ];
+      if (itemRows.length) {
+        const { error } = await supabaseClient.from('rsdc_faq_items').upsert(itemRows, { onConflict: 'id' });
+        if (error) throw error;
+      }
+      const noticeRows = state.notices.map(notice => ({ id: notice.id, notice_type: notice.type, title: notice.title, content: notice.content, author: notice.author, created_at: notice.createdAt, updated_at: notice.updatedAt }));
+      if (noticeRows.length) {
+        const { error } = await supabaseClient.from('rsdc_faq_notices').upsert(noticeRows, { onConflict: 'id' });
+        if (error) throw error;
+      }
+      updateSupabaseStatus('Supabase 연결됨 · 데이터 동기화 완료', 'connected');
+    }
+
+    function saveData(throwOnError = false) {
+      persistLocalData();
+      if (state.backend !== 'supabase') return Promise.resolve();
+      syncQueue = syncQueue.catch(() => {}).then(syncRemoteSnapshot);
+      return syncQueue.catch(error => {
+        updateSupabaseStatus(`동기화 실패: ${error.message || error}`, 'error');
+        if (throwOnError) throw error;
+      });
+    }
+
+    function categoryName(id) { return state.categories.find(category => category.id === id)?.name || '미분류'; }
+    function selectedItem() { return state.items.find(item => item.id === state.selectedItemId) || null; }
+    function selectedNotice() { return state.notices.find(notice => notice.id === state.selectedNoticeId) || null; }
+    function filteredItems() {
+      const keyword = state.search.trim().toLowerCase();
+      return [...state.items]
+        .filter(item => state.selectedCategoryId === 'all' || item.categoryId === state.selectedCategoryId)
+        .filter(item => !keyword || `${item.question} ${item.answer} ${item.author}`.toLowerCase().includes(keyword))
+        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+    }
+
+    function renderFilters() {
+      const options = state.categories.map(category => `<option value="${category.id}">${escapeHtml(category.name)}</option>`).join('');
+      $('categoryFilter').innerHTML = `<option value="all">전체 카테고리</option>${options}`;
+      $('itemCategory').innerHTML = `${options}<option value="__custom__">직접입력</option>`;
+      $('categoryFilter').value = state.selectedCategoryId;
+    }
+
+    function toggleCustomCategoryInput() {
+      const active = $('itemCategory').value === '__custom__';
+      $('categoryInputRow').classList.toggle('custom-active', active);
+      $('customCategoryName').classList.toggle('hidden', !active);
+      $('confirmCustomCategoryBtn').classList.toggle('hidden', !active);
+      if (active) $('customCategoryName').focus();
+      else $('customCategoryName').value = '';
+    }
+
+    function confirmCustomCategory() {
+      const name = $('customCategoryName').value.trim();
+      if (!name) return alert('새 카테고리 이름을 입력해 주세요.');
+      let category = state.categories.find(row => row.name.toLowerCase() === name.toLowerCase());
+      if (!category) {
+        category = { id: makeId('cat'), name };
+        state.categories.push(category);
+        saveData();
+      }
+      renderAll();
+      $('itemCategory').value = category.id;
+      toggleCustomCategoryInput();
+    }
+
+    function renderCategories() {
+      const ranked = state.categories
+        .map(category => ({ ...category, count: state.items.filter(item => item.categoryId === category.id).length }))
+        .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'ko'));
+      $('modalCategoryList').innerHTML = ranked.map(row => `
+        <div class="modal-category-row">
+          <button class="category-item ${state.selectedCategoryId === row.id ? 'active' : ''}" data-modal-category="${row.id}"><span>${escapeHtml(row.name)}</span><strong>${row.count}</strong></button>
+          <button class="btn btn-danger" data-delete-category="${row.id}" aria-label="${escapeHtml(row.name)} 카테고리 삭제">삭제</button>
+        </div>`).join('');
+      document.querySelectorAll('[data-modal-category]').forEach(node => node.onclick = () => {
+        state.selectedCategoryId = node.dataset.modalCategory;
+        state.page = 1;
+        closeCategoryModal();
+        renderAll();
+      });
+      document.querySelectorAll('[data-delete-category]').forEach(node => node.onclick = () => deleteCategoryById(node.dataset.deleteCategory));
+    }
+
+    function renderIssueLists() {
+      const renderGroup = (type, elementId) => {
+        const rows = state.notices.filter(notice => notice.type === type).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+        $(elementId).innerHTML = rows.length
+          ? rows.map(notice => `<button class="issue-item" data-notice-id="${notice.id}" title="${escapeHtml(notice.title)}">${escapeHtml(notice.title)}</button>`).join('')
+          : '<span class="muted">등록된 이슈가 없습니다.</span>';
+      };
+      renderGroup('monthly', 'monthlyIssueList');
+      renderGroup('weekly', 'weeklyIssueList');
+      document.querySelectorAll('[data-notice-id]').forEach(button => button.onclick = () => selectNotice(button.dataset.noticeId));
+    }
+
+    function renderSidebarActivity() {
+      const posts = [...state.items].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 4);
+      $('recentPostList').innerHTML = posts.length ? posts.map(item => `<button class="mini-item" data-recent-item="${item.id}"><strong>${escapeHtml(item.question)}</strong><span>${formatDate(item.createdAt)}</span></button>`).join('') : '<span class="muted">등록된 글이 없습니다.</span>';
+
+      const comments = state.items.flatMap(item => item.comments.map(comment => ({ ...comment, itemId: item.id, question: item.question })))
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 3);
+      $('recentCommentList').innerHTML = comments.length ? comments.map(comment => `<button class="mini-item" data-comment-item="${comment.itemId}"><strong>${escapeHtml(comment.text)}</strong><span>${formatDate(comment.createdAt)}</span></button>`).join('') : '<span class="muted">등록된 댓글이 없습니다.</span>';
+
+      document.querySelectorAll('[data-recent-item], [data-comment-item]').forEach(node => node.onclick = () => {
+        selectItem(node.dataset.recentItem || node.dataset.commentItem);
+        $('viewerPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
+    function renderTable() {
+      const filtered = filteredItems();
+      const totalPages = Math.max(1, Math.ceil(filtered.length / state.pageSize));
+      state.page = Math.min(Math.max(1, state.page), totalPages);
+      const start = (state.page - 1) * state.pageSize;
+      const items = filtered.slice(start, start + state.pageSize);
+      $('listInfo').textContent = filtered.length ? `${filtered.length}건 · ${state.page}/${totalPages}페이지` : '0건';
+      $('itemTableBody').innerHTML = items.length ? items.map(item => `
+        <tr data-item="${item.id}" class="${item.id === state.selectedItemId ? 'active' : ''}">
+          <td>${escapeHtml(categoryName(item.categoryId))}</td>
+          <td>${escapeHtml(item.question)}</td>
+          <td>${escapeHtml(item.author || '-')}</td>
+          <td>${formatDate(item.createdAt)}</td>
+        </tr>`).join('') : '<tr><td colspan="4" class="empty">검색 결과가 없습니다.</td></tr>';
+      document.querySelectorAll('[data-item]').forEach(row => row.onclick = () => selectItem(row.dataset.item));
+      renderPagination(totalPages, filtered.length);
+    }
+
+    function renderPagination(totalPages, totalItems) {
+      if (!totalItems || totalPages <= 1) {
+        $('pagination').innerHTML = '';
+        return;
+      }
+      const candidates = [1, totalPages, state.page - 2, state.page - 1, state.page, state.page + 1, state.page + 2]
+        .filter(page => page >= 1 && page <= totalPages);
+      const pages = [...new Set(candidates)].sort((a, b) => a - b);
+      const parts = [`<button class="page-btn" data-page="${state.page - 1}" ${state.page === 1 ? 'disabled' : ''}>이전</button>`];
+      pages.forEach((page, index) => {
+        if (index && page - pages[index - 1] > 1) parts.push('<span class="page-ellipsis">…</span>');
+        parts.push(`<button class="page-btn ${page === state.page ? 'active' : ''}" data-page="${page}" aria-label="${page}페이지">${page}</button>`);
+      });
+      parts.push(`<button class="page-btn" data-page="${state.page + 1}" ${state.page === totalPages ? 'disabled' : ''}>다음</button>`);
+      $('pagination').innerHTML = parts.join('');
+      document.querySelectorAll('[data-page]').forEach(button => button.onclick = () => {
+        if (button.disabled) return;
+        state.page = Number(button.dataset.page);
+        renderTable();
+        $('itemTableBody').closest('.list-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
+    function renderViewer() {
+      const notice = selectedNotice();
+      if (notice) {
+        $('viewQuestionLabel').textContent = notice.type === 'weekly' ? '필독' : '공지';
+        $('viewAnswerLabel').textContent = '내용';
+        $('viewQuestion').textContent = notice.title;
+        $('viewQuestion').classList.remove('viewer-empty');
+        $('viewAnswer').textContent = notice.content;
+        $('viewAnswer').classList.remove('viewer-empty');
+        $('viewMeta').innerHTML = `${notice.type === 'weekly' ? '이 주의 이슈사항' : '이 달의 이슈사항'}<br>작성자 ${escapeHtml(notice.author || '-')}<br>작성일시 ${formatDate(notice.createdAt)}`;
+        $('viewAnswerImage').classList.add('hidden');
+        $('viewAnswerImage').removeAttribute('src');
+        $('viewerActions').classList.add('hidden');
+        $('commentArea').classList.add('hidden');
+        return;
+      }
+      const item = selectedItem();
+      $('viewQuestionLabel').textContent = '질문';
+      $('viewAnswerLabel').textContent = '답변';
+      $('viewerActions').classList.remove('hidden');
+      if (!item) {
+        $('viewQuestion').textContent = '아래 목록에서 질문을 선택해 주세요.';
+        $('viewQuestion').classList.add('viewer-empty');
+        $('viewAnswer').textContent = '선택한 질문의 답변이 여기에 표시됩니다.';
+        $('viewAnswer').classList.add('viewer-empty');
+        $('viewMeta').innerHTML = '작성자 -<br>작성일시 -<br>최종 수정일시 -';
+        $('viewAnswerImage').classList.add('hidden');
+        $('viewAnswerImage').removeAttribute('src');
+        $('commentList').innerHTML = '<div class="muted">질문을 선택하면 댓글이 표시됩니다.</div>';
+        $('commentArea').classList.remove('hidden');
+        return;
+      }
+      $('viewQuestion').textContent = item.question;
+      $('viewQuestion').classList.remove('viewer-empty');
+      $('viewAnswer').textContent = item.answer;
+      $('viewAnswer').classList.remove('viewer-empty');
+      const finalModifiedAt = item.revisionHistory?.[item.revisionHistory.length - 1]?.at || item.updatedAt || item.createdAt;
+      $('viewMeta').innerHTML = `작성자 ${escapeHtml(item.author || '-')}<br>작성일시 ${formatDate(item.createdAt)}<br>최종 수정일시 ${formatDate(finalModifiedAt)}`;
+      if (item.imageData) {
+        $('viewAnswerImage').src = item.imageData;
+        $('viewAnswerImage').classList.remove('hidden');
+      } else {
+        $('viewAnswerImage').classList.add('hidden');
+        $('viewAnswerImage').removeAttribute('src');
+      }
+      $('commentArea').classList.remove('hidden');
+      renderComments(item);
+    }
+
+    function renderComments(item) {
+      $('commentList').innerHTML = item.comments.length ? item.comments.map(comment => `
+        <div class="comment-item">
+          <div class="comment-meta"><strong>${escapeHtml(comment.author)}</strong><span>${formatDate(comment.createdAt)}</span></div>
+          <div>${escapeHtml(comment.text)}</div>
+        </div>`).join('') : '<div class="muted">등록된 댓글이 없습니다.</div>';
+    }
+
+    function renderAll() { renderFilters(); renderCategories(); renderIssueLists(); renderSidebarActivity(); renderTable(); renderViewer(); renderRevisionHistory(selectedItem()); }
+
+    function updateAttachmentPreview() {
+      if (pendingImageData) {
+        $('attachmentPreviewImage').src = pendingImageData;
+        $('attachmentPreview').classList.remove('hidden');
+      } else {
+        $('attachmentPreview').classList.add('hidden');
+        $('attachmentPreviewImage').removeAttribute('src');
+      }
+    }
+
+    function renderRevisionHistory(item) {
+      const history = item?.revisionHistory || [];
+      if (!history.length) {
+        $('revisionHistoryList').innerHTML = '<span class="muted">질문을 선택하면 수정 이력이 표시됩니다.</span>';
+        return;
+      }
+      $('revisionHistoryList').innerHTML = history.map((entry, index) => {
+        const label = index === 0 ? '최초 작성일자' : `수정 ${index}차`;
+        const isFinal = index === history.length - 1;
+        return `<div class="revision-row"><strong>${label}</strong><span>${formatDate(entry.at)}</span>${isFinal ? '<em class="revision-final">최종</em>' : '<span></span>'}</div>`;
+      }).join('');
+    }
+
+    function clearForm() {
+      state.selectedItemId = null;
+      state.selectedNoticeId = null;
+      $('editorTitle').textContent = '질문 추가';
+      $('editorName').value = '';
+      $('itemQuestion').value = '';
+      $('itemAnswer').value = '';
+      $('answerImageInput').value = '';
+      pendingImageData = '';
+      updateAttachmentPreview();
+      if (state.categories[0]) $('itemCategory').value = state.categories[0].id;
+      toggleCustomCategoryInput();
+      $('editorStatus').textContent = '새 질문을 등록할 수 있습니다.';
+      renderRevisionHistory(null);
+      renderTable();
+      renderViewer();
+    }
+
+    function selectItem(id) {
+      state.selectedNoticeId = null;
+      state.selectedItemId = id;
+      const item = selectedItem();
+      if (!item) return;
+      $('editorTitle').textContent = '질문 추가';
+      $('itemCategory').value = item.categoryId;
+      toggleCustomCategoryInput();
+      $('editorName').value = item.author || '';
+      $('itemQuestion').value = item.question;
+      $('itemAnswer').value = item.answer;
+      $('answerImageInput').value = '';
+      pendingImageData = item.imageData || '';
+      updateAttachmentPreview();
+      const latestRevision = item.revisionHistory?.[item.revisionHistory.length - 1]?.at || item.updatedAt;
+      $('editorStatus').textContent = `최근 수정: ${formatDate(latestRevision)}`;
+      renderRevisionHistory(item);
+      renderTable();
+      renderViewer();
+    }
+
+    function selectNotice(id) {
+      state.selectedItemId = null;
+      state.selectedNoticeId = id;
+      renderIssueLists();
+      renderTable();
+      renderViewer();
+      renderRevisionHistory(null);
+      $('viewerPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function openNoticeModal(type = 'monthly') {
+      $('noticeType').value = type;
+      $('noticeAuthor').value = '';
+      $('noticeTitle').value = '';
+      $('noticeContent').value = '';
+      $('noticeModal').classList.remove('hidden');
+      $('noticeModalBackdrop').classList.remove('hidden');
+      setTimeout(() => $('noticeTitle').focus(), 0);
+    }
+
+    function closeNoticeModal() {
+      $('noticeModal').classList.add('hidden');
+      $('noticeModalBackdrop').classList.add('hidden');
+    }
+
+    async function saveNotice() {
+      const type = $('noticeType').value;
+      const author = $('noticeAuthor').value.trim();
+      const title = $('noticeTitle').value.trim();
+      const content = $('noticeContent').value.trim();
+      if (!author || !title || !content) return alert('작성자, 제목, 내용을 모두 입력해 주세요.');
+      const now = nowISO();
+      const notice = { id: makeId('notice'), type, title, content, author, createdAt: now, updatedAt: now };
+      $('saveNoticeBtn').disabled = true;
+      try {
+        state.notices.unshift(notice);
+        await saveData(true);
+        closeNoticeModal();
+        renderAll();
+        selectNotice(notice.id);
+      } catch (error) {
+        state.notices = state.notices.filter(row => row.id !== notice.id);
+        updateSupabaseStatus(`공지 저장 실패: ${error.message || error}`, 'error');
+        alert(`공지 저장에 실패했습니다: ${error.message || error}`);
+      } finally {
+        $('saveNoticeBtn').disabled = false;
+      }
+    }
+
+    async function uploadImageToSupabase(itemId, dataUrl) {
+      if (!supabaseClient || state.backend !== 'supabase' || !dataUrl?.startsWith('data:image/')) return { imageUrl: dataUrl || '', imagePath: '' };
+      const blob = await fetch(dataUrl).then(response => response.blob());
+      const extension = (blob.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
+      const imagePath = `${itemId}/${Date.now()}.${extension}`;
+      const { error } = await supabaseClient.storage.from('faq-images').upload(imagePath, blob, { contentType: blob.type, upsert: false });
+      if (error) throw error;
+      const { data } = supabaseClient.storage.from('faq-images').getPublicUrl(imagePath);
+      return { imageUrl: data.publicUrl, imagePath };
+    }
+
+    async function saveItem() {
+      const categoryId = $('itemCategory').value;
+      const author = $('editorName').value.trim();
+      const question = $('itemQuestion').value.trim();
+      const answer = $('itemAnswer').value.trim();
+      if (categoryId === '__custom__') return alert('직접 입력한 카테고리를 먼저 추가해 주세요.');
+      if (!categoryId || !author || !question || !answer) return alert('카테고리, 작성자, 질문, 답변을 모두 입력해 주세요.');
+      const now = nowISO();
+      const itemId = state.selectedItemId || makeId('faq');
+      $('saveItemBtn').disabled = true;
+      $('saveItemBtn').textContent = '저장 중...';
+      try {
+        let imageData = pendingImageData;
+        let imagePath = selectedItem()?.imagePath || '';
+        if (pendingImageData?.startsWith('data:image/') && state.backend === 'supabase') {
+          const uploaded = await uploadImageToSupabase(itemId, pendingImageData);
+          imageData = uploaded.imageUrl;
+          imagePath = uploaded.imagePath;
+        }
+        if (state.selectedItemId) {
+          const item = selectedItem();
+          item.revisionHistory = [...(item.revisionHistory || [{ at: item.createdAt }]), { at: now }];
+          Object.assign(item, { categoryId, author, question, answer, imageData, imagePath, updatedAt: now });
+        } else {
+          const item = { id: itemId, categoryId, author, question, answer, imageData, imagePath, createdAt: now, updatedAt: now, comments: [], revisionHistory: [{ at: now }] };
+          state.items.unshift(item);
+          state.selectedItemId = item.id;
+        }
+        await saveData(true);
+        clearForm();
+        renderAll();
+        alert('저장되었습니다.');
+      } catch (error) {
+        updateSupabaseStatus(`저장 실패: ${error.message || error}`, 'error');
+        alert(`저장에 실패했습니다: ${error.message || error}`);
+      } finally {
+        $('saveItemBtn').disabled = false;
+        $('saveItemBtn').textContent = '저장';
+      }
+    }
+
+    function moveItemToTrash(item, category) {
+      state.trashItems.unshift({
+        ...item,
+        trashId: makeId('trash'),
+        deletedAt: nowISO(),
+        deletedCategory: category ? { id: category.id, name: category.name } : null
+      });
+    }
+
+    function renderTrash() {
+      const rows = [...state.trashItems].sort((a, b) => new Date(b.deletedAt) - new Date(a.deletedAt));
+      $('trashList').innerHTML = rows.length ? rows.map(item => `
+        <div class="trash-item">
+          <div>
+            <strong>${escapeHtml(item.question)}</strong>
+            <span>${escapeHtml(item.deletedCategory?.name || '미분류')} · 삭제 ${formatDate(item.deletedAt)}</span>
+          </div>
+          <button class="btn btn-primary" data-restore-trash="${item.trashId}">복구</button>
+        </div>`).join('') : '<div class="empty">휴지통이 비어 있습니다.</div>';
+      document.querySelectorAll('[data-restore-trash]').forEach(node => node.onclick = () => restoreTrashItem(node.dataset.restoreTrash));
+    }
+
+    function restoreTrashItem(trashId) {
+      const entry = state.trashItems.find(item => item.trashId === trashId);
+      if (!entry) return;
+      let category = entry.deletedCategory
+        ? state.categories.find(row => row.id === entry.deletedCategory.id) || state.categories.find(row => row.name === entry.deletedCategory.name)
+        : null;
+      if (!category && entry.deletedCategory) {
+        category = { ...entry.deletedCategory };
+        state.categories.push(category);
+      }
+      const { trashId: removedTrashId, deletedAt, deletedCategory, ...restoredItem } = entry;
+      restoredItem.categoryId = category?.id || '';
+      if (state.items.some(item => item.id === restoredItem.id)) restoredItem.id = makeId('faq');
+      state.items.unshift(restoredItem);
+      state.trashItems = state.trashItems.filter(item => item.trashId !== removedTrashId);
+      saveData();
+      renderAll();
+      renderTrash();
+    }
+
+    function openSettingsModal() {
+      renderTrash();
+      const config = getSupabaseConfig();
+      $('supabaseUrlInput').value = config?.url || '';
+      $('supabaseKeyInput').value = config?.key || '';
+      updateSupabaseStatus(state.backend === 'supabase' ? 'Supabase 연결됨' : 'Supabase가 연결되지 않았습니다.', state.backend === 'supabase' ? 'connected' : '');
+      $('settingsModal').classList.remove('hidden');
+      $('settingsModalBackdrop').classList.remove('hidden');
+    }
+
+    function closeSettingsModal() {
+      $('settingsModal').classList.add('hidden');
+      $('settingsModalBackdrop').classList.add('hidden');
+    }
+
+    function switchSettingsTab(tab) {
+      document.querySelectorAll('[data-settings-tab]').forEach(button => button.classList.toggle('active', button.dataset.settingsTab === tab));
+      $('trashSettingsPanel').classList.toggle('hidden', tab !== 'trash');
+      $('supabaseSettingsPanel').classList.toggle('hidden', tab !== 'supabase');
+    }
+
+    function updateSupabaseStatus(message, type = '') {
+      if (!$('supabaseStatus')) return;
+      $('supabaseStatus').textContent = message;
+      $('supabaseStatus').classList.toggle('connected', type === 'connected');
+      $('supabaseStatus').classList.toggle('error', type === 'error');
+    }
+
+    function isUnsafeSupabaseKey(key) {
+      if (key.startsWith('sb_secret_')) return true;
+      try {
+        const encoded = key.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+        const payload = JSON.parse(atob(encoded + '='.repeat((4 - encoded.length % 4) % 4)));
+        return payload.role === 'service_role';
+      } catch { return false; }
+    }
+
+    async function saveSupabaseConfig() {
+      const url = $('supabaseUrlInput').value.trim().replace(/\/$/, '');
+      const key = $('supabaseKeyInput').value.trim();
+      if (!url || !key) return alert('Project URL과 공개용 key를 모두 입력해 주세요.');
+      if (isUnsafeSupabaseKey(key)) return alert('service_role 또는 secret key는 HTML에 넣을 수 없습니다. Publishable key 또는 anon key를 사용해 주세요.');
+      localStorage.setItem(SUPABASE_CONFIG_STORAGE, JSON.stringify({ url, key }));
+      configureSupabaseClient({ url, key });
+      updateSupabaseStatus('연결 확인 중...');
+      try {
+        const [{ data: categories, error: categoryError }, { data: items, error: itemError }, { data: notices, error: noticeError }] = await Promise.all([
+          supabaseClient.from('rsdc_faq_categories').select('id').limit(1),
+          supabaseClient.from('rsdc_faq_items').select('id').limit(1),
+          supabaseClient.from('rsdc_faq_notices').select('id').limit(1)
+        ]);
+        if (categoryError) throw categoryError;
+        if (itemError) throw itemError;
+        if (noticeError) throw noticeError;
+        state.backend = 'supabase';
+        if ((categories?.length || 0) + (items?.length || 0) + (notices?.length || 0) > 0) {
+          await loadRemoteData();
+          renderAll();
+          renderTrash();
+          updateSupabaseStatus('Supabase 연결됨 · 서버 데이터를 불러왔습니다.', 'connected');
+        } else {
+          updateSupabaseStatus('Supabase 연결됨 · DB가 비어 있습니다. 로컬 데이터 업로드 버튼을 눌러 주세요.', 'connected');
+        }
+      } catch (error) {
+        state.backend = 'local';
+        updateSupabaseStatus(`연결 실패: ${error.message || error}`, 'error');
+      }
+    }
+
+    async function uploadCurrentDataToSupabase() {
+      if (!supabaseClient || state.backend !== 'supabase') return alert('먼저 Supabase 연결을 저장해 주세요.');
+      updateSupabaseStatus('데이터 업로드 중...');
+      try {
+        for (const item of [...state.items, ...state.trashItems]) {
+          if (item.imageData?.startsWith('data:image/')) {
+            const uploaded = await uploadImageToSupabase(item.id, item.imageData);
+            item.imageData = uploaded.imageUrl;
+            item.imagePath = uploaded.imagePath;
+          }
+        }
+        persistLocalData();
+        await syncRemoteSnapshot();
+        updateSupabaseStatus('현재 데이터 업로드 완료', 'connected');
+      } catch (error) {
+        updateSupabaseStatus(`업로드 실패: ${error.message || error}`, 'error');
+      }
+    }
+
+    function disconnectSupabase() {
+      localStorage.removeItem(SUPABASE_CONFIG_STORAGE);
+      supabaseClient = null;
+      state.backend = 'local';
+      $('supabaseKeyInput').value = '';
+      updateSupabaseStatus('연결이 해제되었습니다. 현재 브라우저의 로컬 저장소를 사용합니다.');
+    }
+
+    function deleteItem() {
+      const item = selectedItem();
+      if (!item) return alert('삭제할 질문을 먼저 선택해 주세요.');
+      if (!confirm(`'${item.question}' 질문을 삭제하시겠습니까?`)) return;
+      moveItemToTrash(item, state.categories.find(category => category.id === item.categoryId));
+      state.items = state.items.filter(row => row.id !== item.id);
+      saveData();
+      clearForm();
+      renderAll();
+    }
+
+    function addComment() {
+      const item = selectedItem();
+      if (!item) return alert('댓글을 남길 질문을 먼저 선택해 주세요.');
+      const author = $('commentAuthor').value.trim();
+      const text = $('commentText').value.trim();
+      if (!author || !text) return alert('댓글 작성자와 내용을 입력해 주세요.');
+      item.comments.push({ id: makeId('comment'), author, text, createdAt: nowISO() });
+      saveData();
+      $('commentText').value = '';
+      renderComments(item);
+      renderSidebarActivity();
+    }
+
+    function addCategory() {
+      const name = prompt('새 카테고리 이름을 입력하세요.');
+      if (!name?.trim()) return;
+      state.categories.push({ id: makeId('cat'), name: name.trim() });
+      saveData();
+      renderAll();
+    }
+
+    function editCategory() {
+      if (state.selectedCategoryId === 'all') return alert('수정할 카테고리를 선택해 주세요.');
+      const category = state.categories.find(row => row.id === state.selectedCategoryId);
+      const name = prompt('카테고리 이름을 수정하세요.', category?.name || '');
+      if (!category || !name?.trim()) return;
+      category.name = name.trim();
+      saveData();
+      renderAll();
+    }
+
+    function deleteCategoryById(categoryId) {
+      const category = state.categories.find(row => row.id === categoryId);
+      if (!category) return;
+      if (!confirm('해당 카테고리를 삭제하실 경우 모든 질문/답변이 삭제됩니다 진행하시겠습니까?')) return;
+      const selectedItemWasDeleted = selectedItem()?.categoryId === categoryId;
+      state.items.filter(item => item.categoryId === categoryId).forEach(item => moveItemToTrash(item, category));
+      state.items = state.items.filter(item => item.categoryId !== categoryId);
+      state.categories = state.categories.filter(row => row.id !== categoryId);
+      if (state.selectedCategoryId === categoryId) state.selectedCategoryId = 'all';
+      saveData();
+      if (selectedItemWasDeleted) clearForm();
+      renderAll();
+      openCategoryModal();
+    }
+
+    function openCategoryModal() {
+      $('categoryModal').classList.remove('hidden');
+      $('categoryModalBackdrop').classList.remove('hidden');
+    }
+
+    function closeCategoryModal() {
+      $('categoryModal').classList.add('hidden');
+      $('categoryModalBackdrop').classList.add('hidden');
+    }
+
+    function openActivityModal(type) {
+      const isPost = type === 'posts';
+      $('activityModalTitle').textContent = isPost ? '최근 추가된 글' : '최신 댓글';
+      if (isPost) {
+        const posts = [...state.items].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        $('activityModalList').innerHTML = posts.length ? posts.map(item => `
+          <button class="activity-detail-item" data-activity-item="${item.id}">
+            <strong>${escapeHtml(item.question)}</strong>
+            <span>${escapeHtml(categoryName(item.categoryId))} · ${formatDate(item.createdAt)}</span>
+            <p>${escapeHtml(item.answer)}</p>
+          </button>`).join('') : '<div class="empty">등록된 글이 없습니다.</div>';
+      } else {
+        const comments = state.items.flatMap(item => item.comments.map(comment => ({ ...comment, itemId: item.id, question: item.question })))
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        $('activityModalList').innerHTML = comments.length ? comments.map(comment => `
+          <button class="activity-detail-item" data-activity-item="${comment.itemId}">
+            <strong>${escapeHtml(comment.text)}</strong>
+            <span>${formatDate(comment.createdAt)}</span>
+            <p>연결된 질문: ${escapeHtml(comment.question)}</p>
+          </button>`).join('') : '<div class="empty">등록된 댓글이 없습니다.</div>';
+      }
+      document.querySelectorAll('[data-activity-item]').forEach(node => node.onclick = () => {
+        const itemId = node.dataset.activityItem;
+        closeActivityModal();
+        selectItem(itemId);
+        $('viewerPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      $('activityModal').classList.remove('hidden');
+      $('activityModalBackdrop').classList.remove('hidden');
+    }
+
+    function closeActivityModal() {
+      $('activityModal').classList.add('hidden');
+      $('activityModalBackdrop').classList.add('hidden');
+    }
+
+    function toggleEditorSize(forceClose = false) {
+      const expanded = forceClose ? false : !$('editorPanel').classList.contains('expanded');
+      $('editorPanel').classList.toggle('expanded', expanded);
+      $('editorBackdrop').classList.toggle('hidden', !expanded);
+      $('expandEditorBtn').textContent = expanded ? '작게 보기' : '크게 보기';
+      if (expanded) $('editorPanel').scrollTop = 0;
+    }
+
+    async function resetToInitialView() {
+      if (state.backend === 'supabase') {
+        try { await loadRemoteData(true); }
+        catch (error) { updateSupabaseStatus(`새로고침 실패: ${error.message || error}`, 'error'); }
+      }
+      state.search = '';
+      state.selectedCategoryId = 'all';
+      state.page = 1;
+      $('searchInput').value = '';
+      closeCategoryModal();
+      closeActivityModal();
+      closeSettingsModal();
+      closeNoticeModal();
+      if ($('editorPanel').classList.contains('expanded')) toggleEditorSize(true);
+      clearForm();
+      renderAll();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function attachImageFile(file) {
+      if (!file || !file.type.startsWith('image/')) return alert('이미지 파일만 첨부할 수 있습니다.');
+      if (file.size > 3 * 1024 * 1024) return alert('이미지는 3MB 이하로 첨부해 주세요.');
+      const reader = new FileReader();
+      reader.onload = () => { pendingImageData = String(reader.result || ''); updateAttachmentPreview(); };
+      reader.readAsDataURL(file);
+    }
+
+    $('searchInput').addEventListener('input', event => { state.search = event.target.value; state.page = 1; renderTable(); });
+    $('categoryFilter').addEventListener('change', event => { state.selectedCategoryId = event.target.value; state.page = 1; renderAll(); });
+    $('resetFilterBtn').onclick = () => { state.search = ''; state.selectedCategoryId = 'all'; state.page = 1; $('searchInput').value = ''; renderAll(); };
+    $('themeToggleBtn').onclick = toggleTheme;
+    $('settingsBtn').onclick = openSettingsModal;
+    $('newItemBtn').onclick = resetToInitialView;
+    $('clearFormBtn').onclick = clearForm;
+    $('saveItemBtn').onclick = saveItem;
+    $('itemCategory').addEventListener('change', toggleCustomCategoryInput);
+    $('confirmCustomCategoryBtn').onclick = confirmCustomCategory;
+    $('customCategoryName').addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        confirmCustomCategory();
+      }
+    });
+    $('answerImageInput').addEventListener('change', event => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      attachImageFile(file);
+    });
+    $('itemAnswer').addEventListener('paste', event => {
+      const imageItem = [...(event.clipboardData?.items || [])].find(item => item.type.startsWith('image/'));
+      if (!imageItem) return;
+      event.preventDefault();
+      attachImageFile(imageItem.getAsFile());
+    });
+    $('removeImageBtn').onclick = () => { pendingImageData = ''; $('answerImageInput').value = ''; updateAttachmentPreview(); };
+    $('expandEditorBtn').onclick = () => toggleEditorSize();
+    $('editorBackdrop').onclick = () => toggleEditorSize(true);
+    $('viewerEditBtn').onclick = () => { if (!selectedItem()) return alert('수정할 질문을 선택해 주세요.'); $('editorPanel').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('itemQuestion').focus(); };
+    $('viewerDeleteBtn').onclick = deleteItem;
+    $('addCommentBtn').onclick = addComment;
+    $('commentText').addEventListener('keydown', event => { if (event.key === 'Enter') addComment(); });
+    $('addCategoryBtn').onclick = addCategory;
+    $('editCategoryBtn').onclick = editCategory;
+    $('showAllBtn').onclick = openCategoryModal;
+    document.querySelectorAll('[data-add-notice]').forEach(button => button.onclick = () => openNoticeModal(button.dataset.addNotice));
+    $('saveNoticeBtn').onclick = saveNotice;
+    $('closeNoticeModalBtn').onclick = closeNoticeModal;
+    $('noticeModalBackdrop').onclick = closeNoticeModal;
+    $('closeCategoryModalBtn').onclick = closeCategoryModal;
+    $('categoryModalBackdrop').onclick = closeCategoryModal;
+    $('recentPostMoreBtn').onclick = () => openActivityModal('posts');
+    $('recentCommentMoreBtn').onclick = () => openActivityModal('comments');
+    $('closeActivityModalBtn').onclick = closeActivityModal;
+    $('activityModalBackdrop').onclick = closeActivityModal;
+    $('closeSettingsModalBtn').onclick = closeSettingsModal;
+    $('settingsModalBackdrop').onclick = closeSettingsModal;
+    document.querySelectorAll('[data-settings-tab]').forEach(button => button.onclick = () => switchSettingsTab(button.dataset.settingsTab));
+    $('saveSupabaseConfigBtn').onclick = saveSupabaseConfig;
+    $('uploadLocalDataBtn').onclick = uploadCurrentDataToSupabase;
+    $('disconnectSupabaseBtn').onclick = disconnectSupabase;
+
+    async function init() {
+      applyTheme(localStorage.getItem(THEME_STORAGE) || 'light');
+      await loadData();
+      renderAll();
+    }
+    init();
+  </script>
+</body>
+</html>
