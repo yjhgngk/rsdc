@@ -76,11 +76,11 @@
 
     .app {
       display: grid;
-      grid-template-columns: 250px minmax(540px, 1fr) 340px;
-      gap: 14px;
+      grid-template-columns: 210px minmax(650px, 1fr) 310px;
+      gap: 12px;
       min-height: 100vh;
-      padding: 14px;
-      max-width: 1280px;
+      padding: 12px;
+      max-width: 1480px;
       margin: 0 auto;
     }
 
@@ -248,6 +248,22 @@
     .editor-heading h2 { margin: 0; }
     .attachment-preview { display: grid; gap: 7px; padding: 9px; background: var(--surface-soft); border: 1px dashed var(--line); border-radius: 8px; }
     .attachment-preview img { max-width: 100%; max-height: 220px; object-fit: contain; border-radius: 7px; }
+    #noticeModal { width: min(820px, calc(100vw - 32px)); }
+    .rich-editor {
+      min-height: 250px;
+      padding: 12px;
+      overflow: auto;
+      color: var(--text);
+      background: var(--input);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      outline: none;
+      line-height: 1.7;
+      white-space: normal;
+    }
+    .rich-editor:empty::before { color: var(--sub); content: attr(data-placeholder); pointer-events: none; }
+    .rich-editor:focus { border-color: rgba(59, 130, 246, .5); box-shadow: var(--focus-shadow), 0 0 0 2px rgba(59, 130, 246, .18); }
+    .rich-editor img, .viewer-answer-text img { display: block; max-width: 100%; max-height: 520px; margin: 12px auto; border: 1px solid var(--line); border-radius: 9px; object-fit: contain; }
     .editor.expanded { position: fixed; z-index: 51; inset: 24px; width: min(900px, calc(100vw - 48px)); margin: auto; overflow: auto; }
     .editor.expanded textarea { min-height: 180px; }
     .backdrop { position: fixed; z-index: 50; inset: 0; background: rgba(15, 15, 14, .62); backdrop-filter: blur(3px); }
@@ -291,7 +307,7 @@
     .revision-row strong { color: var(--text); }
     .revision-final { padding: 2px 7px; color: var(--primary-contrast); background: var(--primary); border-radius: 999px; }
 
-    @media (max-width: 1180px) {
+    @media (max-width: 1220px) {
       .app { grid-template-columns: 220px 1fr; }
       .editor { grid-column: 1 / -1; }
     }
@@ -464,24 +480,9 @@
       <h2 id="settingsModalTitle">설정</h2>
       <button class="btn btn-secondary" id="closeSettingsModalBtn">닫기</button>
     </div>
-    <div class="settings-tabs">
-      <button class="btn settings-tab active" type="button" data-settings-tab="trash">휴지통</button>
-      <button class="btn settings-tab" type="button" data-settings-tab="supabase">Supabase</button>
-    </div>
     <div class="settings-panel" id="trashSettingsPanel">
+      <h3>휴지통</h3>
       <div class="trash-list" id="trashList"></div>
-    </div>
-    <div class="settings-panel hidden" id="supabaseSettingsPanel">
-      <div class="config-grid">
-        <div class="field"><label for="supabaseUrlInput">Project URL</label><input type="text" id="supabaseUrlInput" placeholder="https://xxxxx.supabase.co"></div>
-        <div class="field"><label for="supabaseKeyInput">Publishable 또는 anon key</label><input type="password" id="supabaseKeyInput" placeholder="sb_publishable_... 또는 eyJ..."></div>
-        <div class="config-actions">
-          <button class="btn btn-primary" id="saveSupabaseConfigBtn" type="button">연결 저장</button>
-          <button class="btn btn-secondary" id="uploadLocalDataBtn" type="button">현재 로컬 데이터 업로드</button>
-          <button class="btn btn-danger" id="disconnectSupabaseBtn" type="button">연결 해제</button>
-        </div>
-        <div class="connection-status" id="supabaseStatus">Supabase가 연결되지 않았습니다.</div>
-      </div>
     </div>
   </section>
   <div class="backdrop modal-backdrop hidden" id="noticeModalBackdrop"></div>
@@ -494,7 +495,11 @@
       <div class="field"><label for="noticeType">구분</label><select id="noticeType"><option value="monthly">이 달의 이슈사항</option><option value="weekly">이 주의 이슈사항(필독)</option></select></div>
       <div class="field"><label for="noticeAuthor">작성자</label><input type="text" id="noticeAuthor" placeholder="이름"></div>
       <div class="field"><label for="noticeTitle">제목</label><input type="text" id="noticeTitle" placeholder="공지 제목"></div>
-      <div class="field"><label for="noticeContent">내용</label><textarea id="noticeContent" placeholder="공지 내용을 입력하세요"></textarea></div>
+      <div class="field">
+        <label for="noticeContent">내용</label>
+        <div class="rich-editor" id="noticeContent" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="공지 내용을 입력하세요"></div>
+        <span class="muted">본문에서 원하는 위치를 클릭한 뒤 이미지를 붙여넣으세요.</span>
+      </div>
       <div class="field">
         <label for="noticeImageInput">공지 이미지 첨부</label>
         <input type="file" id="noticeImageInput" accept="image/*">
@@ -516,12 +521,46 @@
     const TRASH_STORAGE = 'rsdc_faq_trash_v1';
     const NOTICE_STORAGE = 'rsdc_faq_notices_v1';
     const THEME_STORAGE = 'rsdc_faq_theme_v1';
-    const SUPABASE_CONFIG_STORAGE = 'rsdc_supabase_config_v1';
     const $ = id => document.getElementById(id);
     const makeId = prefix => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     const nowISO = () => new Date().toISOString();
     const formatDate = iso => iso ? new Date(iso).toLocaleString('ko-KR') : '-';
     const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+
+    function sanitizeNoticeHtml(html) {
+      const allowed = new Set(['DIV', 'P', 'BR', 'IMG', 'B', 'STRONG', 'I', 'EM', 'U', 'UL', 'OL', 'LI']);
+      const source = document.createElement('div');
+      const output = document.createElement('div');
+      source.innerHTML = String(html || '');
+      const copySafeNode = node => {
+        if (node.nodeType === Node.TEXT_NODE) return document.createTextNode(node.textContent || '');
+        if (node.nodeType !== Node.ELEMENT_NODE) return document.createDocumentFragment();
+        const fragment = document.createDocumentFragment();
+        if (!allowed.has(node.tagName)) {
+          [...node.childNodes].forEach(child => fragment.appendChild(copySafeNode(child)));
+          return fragment;
+        }
+        const clean = document.createElement(node.tagName.toLowerCase());
+        if (node.tagName === 'IMG') {
+          const src = node.getAttribute('src') || '';
+          if (!/^https:\/\//i.test(src) && !/^data:image\/(png|jpe?g|gif|webp);base64,/i.test(src)) return fragment;
+          clean.setAttribute('src', src);
+          clean.setAttribute('alt', node.getAttribute('alt') || '공지 이미지');
+          clean.setAttribute('loading', 'lazy');
+          return clean;
+        }
+        [...node.childNodes].forEach(child => clean.appendChild(copySafeNode(child)));
+        return clean;
+      };
+      [...source.childNodes].forEach(node => output.appendChild(copySafeNode(node)));
+      return output.innerHTML;
+    }
+
+    function noticeContentToHtml(content) {
+      const value = String(content || '');
+      const hasRichMarkup = /<(div|p|br|img|b|strong|i|em|u|ul|ol|li)\b/i.test(value);
+      return sanitizeNoticeHtml(hasRichMarkup ? value : escapeHtml(value).replace(/\r?\n/g, '<br>'));
+    }
 
     const state = { categories: [], items: [], trashItems: [], notices: [], selectedCategoryId: 'all', selectedItemId: null, selectedNoticeId: null, search: '', page: 1, pageSize: 10, backend: 'local' };
     let pendingImageData = '';
@@ -586,10 +625,7 @@
     }
 
     function getSupabaseConfig() {
-      try {
-        const saved = JSON.parse(localStorage.getItem(SUPABASE_CONFIG_STORAGE) || 'null');
-        return saved?.url && saved?.key ? saved : (window.RSDC_SUPABASE_CONFIG || null);
-      } catch { return window.RSDC_SUPABASE_CONFIG || null; }
+      return window.RSDC_SUPABASE_CONFIG || null;
     }
 
     function configureSupabaseClient(config = getSupabaseConfig()) {
@@ -867,7 +903,7 @@
         $('viewAnswerLabel').textContent = '내용';
         $('viewQuestion').textContent = notice.title;
         $('viewQuestion').classList.remove('viewer-empty');
-        $('viewAnswer').textContent = notice.content;
+        $('viewAnswer').innerHTML = noticeContentToHtml(notice.content);
         $('viewAnswer').classList.remove('viewer-empty');
         $('viewMeta').innerHTML = `${notice.type === 'weekly' ? '이 주의 이슈사항' : '이 달의 이슈사항'}<br>작성자 ${escapeHtml(notice.author || '-')}<br>작성일시 ${formatDate(notice.createdAt)}`;
         if (notice.imageData) {
@@ -1004,7 +1040,7 @@
       $('noticeType').value = notice?.type || type;
       $('noticeAuthor').value = notice?.author || '';
       $('noticeTitle').value = notice?.title || '';
-      $('noticeContent').value = notice?.content || '';
+      $('noticeContent').innerHTML = noticeContentToHtml(notice?.content || '');
       $('noticeImageInput').value = '';
       pendingNoticeImageData = notice?.imageData || '';
       pendingNoticeImagePath = notice?.imagePath || '';
@@ -1026,14 +1062,16 @@
       const type = $('noticeType').value;
       const author = $('noticeAuthor').value.trim();
       const title = $('noticeTitle').value.trim();
-      const content = $('noticeContent').value.trim();
-      if (!author || !title || !content) return alert('작성자, 제목, 내용을 모두 입력해 주세요.');
+      let content = sanitizeNoticeHtml($('noticeContent').innerHTML).trim();
+      const hasBody = $('noticeContent').textContent.trim() || /<img\b/i.test(content);
+      if (!author || !title || !hasBody) return alert('작성자, 제목, 내용을 모두 입력해 주세요.');
       const now = nowISO();
       const existing = editingNoticeId ? state.notices.find(row => row.id === editingNoticeId) : null;
       const previous = existing ? { ...existing } : null;
       const notice = existing || { id: makeId('notice'), comments: [], createdAt: now };
       $('saveNoticeBtn').disabled = true;
       try {
+        content = await uploadInlineNoticeImages(notice.id, content);
         let imageData = pendingNoticeImageData;
         let imagePath = pendingNoticeImagePath;
         if (imageData?.startsWith('data:image/') && state.backend === 'supabase') {
@@ -1079,6 +1117,45 @@
       reader.readAsDataURL(file);
     }
 
+    function pasteInlineNoticeImage(file, savedRange) {
+      if (!file || !file.type.startsWith('image/')) return alert('이미지 파일만 붙여넣을 수 있습니다.');
+      if (file.size > 3 * 1024 * 1024) return alert('이미지는 3MB 이하로 붙여넣어 주세요.');
+      const reader = new FileReader();
+      reader.onload = () => {
+        const editor = $('noticeContent');
+        const image = document.createElement('img');
+        image.src = String(reader.result || '');
+        image.alt = '공지 이미지';
+        const range = savedRange && editor.contains(savedRange.commonAncestorContainer) ? savedRange : null;
+        if (range) {
+          range.deleteContents();
+          range.insertNode(image);
+          range.setStartAfter(image);
+          range.collapse(true);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+        } else {
+          editor.appendChild(image);
+        }
+        editor.focus();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function uploadInlineNoticeImages(noticeId, html) {
+      const container = document.createElement('div');
+      container.innerHTML = sanitizeNoticeHtml(html);
+      const images = [...container.querySelectorAll('img[src^="data:image/"]')];
+      if (state.backend === 'supabase') {
+        for (const image of images) {
+          const uploaded = await uploadImageToSupabase(noticeId, image.getAttribute('src'));
+          image.setAttribute('src', uploaded.imageUrl);
+        }
+      }
+      return sanitizeNoticeHtml(container.innerHTML);
+    }
+
     function editSelectedContent() {
       const notice = selectedNotice();
       if (notice) return openNoticeModal(notice.type, notice);
@@ -1115,7 +1192,7 @@
       if (!supabaseClient || state.backend !== 'supabase' || !dataUrl?.startsWith('data:image/')) return { imageUrl: dataUrl || '', imagePath: '' };
       const blob = await fetch(dataUrl).then(response => response.blob());
       const extension = (blob.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
-      const imagePath = `${itemId}/${Date.now()}.${extension}`;
+      const imagePath = `${itemId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${extension}`;
       const { error } = await supabaseClient.storage.from('faq-images').upload(imagePath, blob, { contentType: blob.type, upsert: false });
       if (error) throw error;
       const { data } = supabaseClient.storage.from('faq-images').getPublicUrl(imagePath);
@@ -1207,10 +1284,6 @@
 
     function openSettingsModal() {
       renderTrash();
-      const config = getSupabaseConfig();
-      $('supabaseUrlInput').value = config?.url || '';
-      $('supabaseKeyInput').value = config?.key || '';
-      updateSupabaseStatus(state.backend === 'supabase' ? 'Supabase 연결됨' : 'Supabase가 연결되지 않았습니다.', state.backend === 'supabase' ? 'connected' : '');
       $('settingsModal').classList.remove('hidden');
       $('settingsModalBackdrop').classList.remove('hidden');
     }
@@ -1220,85 +1293,11 @@
       $('settingsModalBackdrop').classList.add('hidden');
     }
 
-    function switchSettingsTab(tab) {
-      document.querySelectorAll('[data-settings-tab]').forEach(button => button.classList.toggle('active', button.dataset.settingsTab === tab));
-      $('trashSettingsPanel').classList.toggle('hidden', tab !== 'trash');
-      $('supabaseSettingsPanel').classList.toggle('hidden', tab !== 'supabase');
-    }
-
     function updateSupabaseStatus(message, type = '') {
       if (!$('supabaseStatus')) return;
       $('supabaseStatus').textContent = message;
       $('supabaseStatus').classList.toggle('connected', type === 'connected');
       $('supabaseStatus').classList.toggle('error', type === 'error');
-    }
-
-    function isUnsafeSupabaseKey(key) {
-      if (key.startsWith('sb_secret_')) return true;
-      try {
-        const encoded = key.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-        const payload = JSON.parse(atob(encoded + '='.repeat((4 - encoded.length % 4) % 4)));
-        return payload.role === 'service_role';
-      } catch { return false; }
-    }
-
-    async function saveSupabaseConfig() {
-      const url = $('supabaseUrlInput').value.trim().replace(/\/$/, '');
-      const key = $('supabaseKeyInput').value.trim();
-      if (!url || !key) return alert('Project URL과 공개용 key를 모두 입력해 주세요.');
-      if (isUnsafeSupabaseKey(key)) return alert('service_role 또는 secret key는 HTML에 넣을 수 없습니다. Publishable key 또는 anon key를 사용해 주세요.');
-      localStorage.setItem(SUPABASE_CONFIG_STORAGE, JSON.stringify({ url, key }));
-      configureSupabaseClient({ url, key });
-      updateSupabaseStatus('연결 확인 중...');
-      try {
-        const [{ data: categories, error: categoryError }, { data: items, error: itemError }, { data: notices, error: noticeError }] = await Promise.all([
-          supabaseClient.from('rsdc_faq_categories').select('id').limit(1),
-          supabaseClient.from('rsdc_faq_items').select('id').limit(1),
-          supabaseClient.from('rsdc_faq_notices').select('id').limit(1)
-        ]);
-        if (categoryError) throw categoryError;
-        if (itemError) throw itemError;
-        if (noticeError) throw noticeError;
-        state.backend = 'supabase';
-        if ((categories?.length || 0) + (items?.length || 0) + (notices?.length || 0) > 0) {
-          await loadRemoteData();
-          renderAll();
-          renderTrash();
-          updateSupabaseStatus('Supabase 연결됨 · 서버 데이터를 불러왔습니다.', 'connected');
-        } else {
-          updateSupabaseStatus('Supabase 연결됨 · DB가 비어 있습니다. 로컬 데이터 업로드 버튼을 눌러 주세요.', 'connected');
-        }
-      } catch (error) {
-        state.backend = 'local';
-        updateSupabaseStatus(`연결 실패: ${error.message || error}`, 'error');
-      }
-    }
-
-    async function uploadCurrentDataToSupabase() {
-      if (!supabaseClient || state.backend !== 'supabase') return alert('먼저 Supabase 연결을 저장해 주세요.');
-      updateSupabaseStatus('데이터 업로드 중...');
-      try {
-        for (const item of [...state.items, ...state.trashItems]) {
-          if (item.imageData?.startsWith('data:image/')) {
-            const uploaded = await uploadImageToSupabase(item.id, item.imageData);
-            item.imageData = uploaded.imageUrl;
-            item.imagePath = uploaded.imagePath;
-          }
-        }
-        persistLocalData();
-        await syncRemoteSnapshot();
-        updateSupabaseStatus('현재 데이터 업로드 완료', 'connected');
-      } catch (error) {
-        updateSupabaseStatus(`업로드 실패: ${error.message || error}`, 'error');
-      }
-    }
-
-    function disconnectSupabase() {
-      localStorage.removeItem(SUPABASE_CONFIG_STORAGE);
-      supabaseClient = null;
-      state.backend = 'local';
-      $('supabaseKeyInput').value = '';
-      updateSupabaseStatus('연결이 해제되었습니다. 현재 브라우저의 로컬 저장소를 사용합니다.');
     }
 
     function deleteItem() {
@@ -1491,8 +1490,10 @@
     $('noticeContent').addEventListener('paste', event => {
       const imageItem = [...(event.clipboardData?.items || [])].find(item => item.type.startsWith('image/'));
       if (!imageItem) return;
+      const selection = window.getSelection();
+      const savedRange = selection.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
       event.preventDefault();
-      attachNoticeImageFile(imageItem.getAsFile());
+      pasteInlineNoticeImage(imageItem.getAsFile(), savedRange);
     });
     $('removeNoticeImageBtn').onclick = () => {
       pendingNoticeImageData = '';
@@ -1508,10 +1509,6 @@
     $('activityModalBackdrop').onclick = closeActivityModal;
     $('closeSettingsModalBtn').onclick = closeSettingsModal;
     $('settingsModalBackdrop').onclick = closeSettingsModal;
-    document.querySelectorAll('[data-settings-tab]').forEach(button => button.onclick = () => switchSettingsTab(button.dataset.settingsTab));
-    $('saveSupabaseConfigBtn').onclick = saveSupabaseConfig;
-    $('uploadLocalDataBtn').onclick = uploadCurrentDataToSupabase;
-    $('disconnectSupabaseBtn').onclick = disconnectSupabase;
 
     async function init() {
       applyTheme(localStorage.getItem(THEME_STORAGE) || 'light');
