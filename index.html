@@ -112,7 +112,7 @@
       align-items: flex-start;
       gap: 10px;
       padding-bottom: 14px;
-      border-bottom: 1px solid var(--line);
+      border-bottom: 0;
     }
 
     .sidebar-brand h1 { margin: 0; color: #0082ff; letter-spacing: -.35px; font-weight: 700; }
@@ -176,14 +176,14 @@
     .category-toolbar-title strong { font-weight: 600; }
     .category-toolbar-actions { display: flex; gap: 6px; }
     .category-toolbar-actions .btn { min-width: 54px; }
-    .sidebar-section { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .sidebar-section { margin-top: 18px; padding-top: 0; border-top: 0; }
     .sidebar-section h3 { margin: 0; }
     .sidebar-section h3, .list-title strong, .field label, th {
       font-family: inherit;
       font-weight: 600;
       letter-spacing: normal;
     }
-    .sidebar-section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+    .sidebar-section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
     .icon-btn { width: 24px; height: 24px; padding: 0; color: var(--text); background: var(--primary-soft); border: 1px solid var(--line); border-radius: 9999px; font-weight: 600; }
     .mini-list { display: grid; gap: 0; min-width: 0; overflow: hidden; }
     .mini-item {
@@ -206,7 +206,7 @@
     .sidebar-section .icon-btn { width: auto; height: auto; padding: 0; background: transparent; border: 0; border-radius: 0; box-shadow: none; font-size: 12pt; font-weight: 400; }
     .sidebar-section .icon-btn:hover { color: var(--primary); background: transparent; box-shadow: none; }
     .issue-board { margin-top: 16px; }
-    .issue-group + .issue-group { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .issue-group + .issue-group { margin-top: 18px; padding-top: 0; border-top: 0; }
     .issue-list { display: grid; }
     .issue-item { width: 100%; padding: 8px 0; overflow: hidden; color: var(--text); text-align: left; background: transparent; border: 0; border-bottom: 1px solid var(--line); text-overflow: ellipsis; white-space: nowrap; }
     .issue-item:hover { color: var(--primary); background: var(--surface-soft); }
