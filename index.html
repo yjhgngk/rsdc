@@ -364,34 +364,6 @@
         </div>
       </section>
 
-      <section class="panel viewer" id="viewerPanel">
-        <div class="viewer-head">
-          <div class="viewer-label" id="viewQuestionLabel">질문</div>
-          <div class="viewer-question viewer-empty" id="viewQuestion">아래 목록에서 질문을 선택해 주세요.</div>
-          <div class="viewer-meta" id="viewMeta">작성자 -<br>작성일시 -<br>최종 수정일시 -</div>
-        </div>
-        <div class="viewer-answer">
-          <div class="viewer-label" id="viewAnswerLabel">답변</div>
-          <div>
-            <div class="viewer-answer-text viewer-empty" id="viewAnswer">선택한 질문의 답변이 여기에 표시됩니다.</div>
-            <img class="answer-image hidden" id="viewAnswerImage" alt="답변 첨부 이미지">
-          </div>
-        </div>
-        <div class="viewer-actions" id="viewerActions">
-          <button class="btn btn-secondary" id="viewerEditBtn">수정</button>
-          <button class="btn btn-danger" id="viewerDeleteBtn">삭제</button>
-        </div>
-        <div class="comments" id="commentArea">
-          <strong>댓글</strong>
-          <div class="comment-list" id="commentList"></div>
-          <div class="comment-form">
-            <input type="text" id="commentAuthor" placeholder="작성자">
-            <input type="text" id="commentText" placeholder="댓글을 입력해 주세요">
-            <button class="btn btn-primary" id="addCommentBtn">등록</button>
-          </div>
-        </div>
-      </section>
-
       <section class="panel category-toolbar">
         <div class="category-toolbar-title"><strong>카테고리</strong><span class="muted">질문 분류</span></div>
         <select id="categoryFilter" aria-label="카테고리 선택"></select>
@@ -415,6 +387,34 @@
           </table>
         </div>
         <div class="pagination" id="pagination"></div>
+      </section>
+
+      <section class="panel viewer" id="viewerPanel">
+        <div class="viewer-head">
+          <div class="viewer-label" id="viewQuestionLabel">질문</div>
+          <div class="viewer-question viewer-empty" id="viewQuestion">위 목록에서 질문을 선택해 주세요.</div>
+          <div class="viewer-meta" id="viewMeta">작성자 -<br>작성일시 -<br>최종 수정일시 -</div>
+        </div>
+        <div class="viewer-answer">
+          <div class="viewer-label" id="viewAnswerLabel">답변</div>
+          <div>
+            <div class="viewer-answer-text viewer-empty" id="viewAnswer">선택한 질문의 답변이 여기에 표시됩니다.</div>
+            <img class="answer-image hidden" id="viewAnswerImage" alt="답변 첨부 이미지">
+          </div>
+        </div>
+        <div class="viewer-actions" id="viewerActions">
+          <button class="btn btn-secondary" id="viewerEditBtn">수정</button>
+          <button class="btn btn-danger" id="viewerDeleteBtn">삭제</button>
+        </div>
+        <div class="comments" id="commentArea">
+          <strong>댓글</strong>
+          <div class="comment-list" id="commentList"></div>
+          <div class="comment-form">
+            <input type="text" id="commentAuthor" placeholder="작성자">
+            <input type="text" id="commentText" placeholder="댓글을 입력해 주세요">
+            <button class="btn btn-primary" id="addCommentBtn">등록</button>
+          </div>
+        </div>
       </section>
     </main>
 
@@ -869,7 +869,10 @@
           <td>${escapeHtml(item.author || '-')}</td>
           <td>${formatDate(item.createdAt)}</td>
         </tr>`).join('') : '<tr><td colspan="4" class="empty">검색 결과가 없습니다.</td></tr>';
-      document.querySelectorAll('[data-item]').forEach(row => row.onclick = () => selectItem(row.dataset.item));
+      document.querySelectorAll('[data-item]').forEach(row => row.onclick = () => {
+        selectItem(row.dataset.item);
+        $('viewerPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
       renderPagination(totalPages, filtered.length);
     }
 
@@ -923,7 +926,7 @@
       $('viewAnswerLabel').textContent = '답변';
       $('viewerActions').classList.remove('hidden');
       if (!item) {
-        $('viewQuestion').textContent = '아래 목록에서 질문을 선택해 주세요.';
+        $('viewQuestion').textContent = '위 목록에서 질문을 선택해 주세요.';
         $('viewQuestion').classList.add('viewer-empty');
         $('viewAnswer').textContent = '선택한 질문의 답변이 여기에 표시됩니다.';
         $('viewAnswer').classList.add('viewer-empty');
