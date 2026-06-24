@@ -26,6 +26,10 @@
       --danger-soft: rgba(157, 61, 54, .08);
       --success: #35634a;
       --success-soft: rgba(53, 99, 74, .09);
+      --notice-bg: #fffaf0;
+      --notice-head: #fff2c9;
+      --notice-line: #e8ca78;
+      --notice-ink: #8a6100;
       --shadow: none;
       --focus-shadow: rgba(0, 0, 0, .1) 0 4px 12px;
       --button-shadow: rgba(255,255,255,.2) 0 .5px 0 inset, rgba(0,0,0,.2) 0 0 0 .5px inset, rgba(0,0,0,.05) 0 1px 2px;
@@ -53,6 +57,10 @@
       --danger-soft: rgba(239, 156, 145, .1);
       --success: #9bc9ad;
       --success-soft: rgba(155, 201, 173, .1);
+      --notice-bg: #252218;
+      --notice-head: #302a18;
+      --notice-line: rgba(244, 196, 82, .38);
+      --notice-ink: #ffd36b;
       --focus-shadow: rgba(0,0,0,.4) 0 4px 12px;
     }
 
@@ -222,6 +230,10 @@
     .issue-archive-item span { color: var(--sub); }
 
     .viewer { overflow: hidden; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+    .viewer.notice-mode { background: var(--notice-bg); border-color: var(--notice-line); }
+    .viewer.notice-mode .viewer-head { background: var(--notice-head); border-color: var(--notice-line); }
+    .viewer.notice-mode .viewer-label { color: var(--notice-ink); }
+    .viewer.notice-mode .comments { border-top-color: var(--notice-line); }
     .viewer-head {
       display: grid;
       grid-template-columns: 58px 1fr auto;
@@ -1026,6 +1038,7 @@
 
     function renderViewer() {
       const notice = selectedNotice();
+      $('viewerPanel').classList.toggle('notice-mode', Boolean(notice));
       if (notice) {
         $('viewQuestionLabel').textContent = '공지';
         $('viewAnswerLabel').textContent = '내용';
