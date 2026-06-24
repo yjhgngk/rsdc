@@ -486,6 +486,15 @@
       <div class="field"><label for="noticeAuthor">작성자</label><input type="text" id="noticeAuthor" placeholder="이름"></div>
       <div class="field"><label for="noticeTitle">제목</label><input type="text" id="noticeTitle" placeholder="공지 제목"></div>
       <div class="field"><label for="noticeContent">내용</label><textarea id="noticeContent" placeholder="공지 내용을 입력하세요"></textarea></div>
+      <div class="field">
+        <label for="noticeImageInput">공지 이미지 첨부</label>
+        <input type="file" id="noticeImageInput" accept="image/*">
+        <span class="muted">내용 입력칸에 이미지를 붙여넣어도 자동으로 첨부됩니다.</span>
+        <div class="attachment-preview hidden" id="noticeAttachmentPreview">
+          <img id="noticeAttachmentPreviewImage" alt="공지 첨부 이미지 미리보기">
+          <button class="btn btn-danger" id="removeNoticeImageBtn" type="button">첨부 이미지 삭제</button>
+        </div>
+      </div>
       <button class="btn btn-primary" id="saveNoticeBtn" type="button">저장</button>
     </div>
   </section>
@@ -507,6 +516,8 @@
 
     const state = { categories: [], items: [], trashItems: [], notices: [], selectedCategoryId: 'all', selectedItemId: null, selectedNoticeId: null, search: '', page: 1, pageSize: 10, backend: 'local' };
     let pendingImageData = '';
+    let pendingNoticeImageData = '';
+    let pendingNoticeImagePath = '';
     let editingNoticeId = null;
     let supabaseClient = null;
     let syncQueue = Promise.resolve();
@@ -641,7 +652,7 @@
         deletedAt: row.deleted_at,
         deletedCategory: row.deleted_category
       }));
-      state.notices = (notices || []).map(row => ({ id: row.id, type: row.notice_type, title: row.title, content: row.content, author: row.author, createdAt: row.created_at, updatedAt: row.updated_at }));
+      state.notices = (notices || []).map(row => ({ id: row.id, type: row.notice_type, title: row.title, content: row.content, author: row.author, imageData: row.image_url || '', imagePath: row.image_path || '', comments: Array.isArray(row.comments) ? row.comments : [], createdAt: row.created_at, updatedAt: row.updated_at }));
       state.backend = 'supabase';
       persistLocalData();
       return true;
@@ -681,7 +692,7 @@
         const { error } = await supabaseClient.from('rsdc_faq_items').upsert(itemRows, { onConflict: 'id' });
         if (error) throw error;
       }
-      const noticeRows = state.notices.map(notice => ({ id: notice.id, notice_type: notice.type, title: notice.title, content: notice.content, author: notice.author, created_at: notice.createdAt, updated_at: notice.updatedAt }));
+      const noticeRows = state.notices.map(notice => ({ id: notice.id, notice_type: notice.type, title: notice.title, content: notice.content, author: notice.author, image_url: notice.imageData || null, image_path: notice.imagePath || null, comments: notice.comments || [], created_at: notice.createdAt, updated_at: notice.updatedAt }));
       if (noticeRows.length) {
         const { error } = await supabaseClient.from('rsdc_faq_notices').upsert(noticeRows, { onConflict: 'id' });
         if (error) throw error;
@@ -782,12 +793,20 @@
       const posts = [...state.items].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 4);
       $('recentPostList').innerHTML = posts.length ? posts.map(item => `<button class="mini-item" data-recent-item="${item.id}"><strong>${escapeHtml(item.question)}</strong><span>${formatDate(item.createdAt)}</span></button>`).join('') : '<span class="muted">등록된 글이 없습니다.</span>';
 
-      const comments = state.items.flatMap(item => item.comments.map(comment => ({ ...comment, itemId: item.id, question: item.question })))
+      const comments = [
+        ...state.items.flatMap(item => item.comments.map(comment => ({ ...comment, targetId: item.id, targetType: 'item' }))),
+        ...state.notices.flatMap(notice => (notice.comments || []).map(comment => ({ ...comment, targetId: notice.id, targetType: 'notice' })))
+      ]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 3);
-      $('recentCommentList').innerHTML = comments.length ? comments.map(comment => `<button class="mini-item" data-comment-item="${comment.itemId}"><strong>${escapeHtml(comment.text)}</strong><span>${formatDate(comment.createdAt)}</span></button>`).join('') : '<span class="muted">등록된 댓글이 없습니다.</span>';
+      $('recentCommentList').innerHTML = comments.length ? comments.map(comment => `<button class="mini-item" data-comment-target="${comment.targetId}" data-comment-type="${comment.targetType}"><strong>${escapeHtml(comment.text)}</strong><span>${formatDate(comment.createdAt)}</span></button>`).join('') : '<span class="muted">등록된 댓글이 없습니다.</span>';
 
-      document.querySelectorAll('[data-recent-item], [data-comment-item]').forEach(node => node.onclick = () => {
-        selectItem(node.dataset.recentItem || node.dataset.commentItem);
+      document.querySelectorAll('[data-recent-item]').forEach(node => node.onclick = () => {
+        selectItem(node.dataset.recentItem);
+        $('viewerPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      document.querySelectorAll('[data-comment-target]').forEach(node => node.onclick = () => {
+        if (node.dataset.commentType === 'notice') selectNotice(node.dataset.commentTarget);
+        else selectItem(node.dataset.commentTarget);
         $('viewerPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     }
@@ -843,10 +862,16 @@
         $('viewAnswer').textContent = notice.content;
         $('viewAnswer').classList.remove('viewer-empty');
         $('viewMeta').innerHTML = `${notice.type === 'weekly' ? '이 주의 이슈사항' : '이 달의 이슈사항'}<br>작성자 ${escapeHtml(notice.author || '-')}<br>작성일시 ${formatDate(notice.createdAt)}`;
-        $('viewAnswerImage').classList.add('hidden');
-        $('viewAnswerImage').removeAttribute('src');
+        if (notice.imageData) {
+          $('viewAnswerImage').src = notice.imageData;
+          $('viewAnswerImage').classList.remove('hidden');
+        } else {
+          $('viewAnswerImage').classList.add('hidden');
+          $('viewAnswerImage').removeAttribute('src');
+        }
         $('viewerActions').classList.remove('hidden');
-        $('commentArea').classList.add('hidden');
+        $('commentArea').classList.remove('hidden');
+        renderComments(notice);
         return;
       }
       const item = selectedItem();
@@ -883,7 +908,8 @@
     }
 
     function renderComments(item) {
-      $('commentList').innerHTML = item.comments.length ? item.comments.map(comment => `
+      const comments = item.comments || [];
+      $('commentList').innerHTML = comments.length ? comments.map(comment => `
         <div class="comment-item">
           <div class="comment-meta"><strong>${escapeHtml(comment.author)}</strong><span>${formatDate(comment.createdAt)}</span></div>
           <div>${escapeHtml(comment.text)}</div>
@@ -971,6 +997,10 @@
       $('noticeAuthor').value = notice?.author || '';
       $('noticeTitle').value = notice?.title || '';
       $('noticeContent').value = notice?.content || '';
+      $('noticeImageInput').value = '';
+      pendingNoticeImageData = notice?.imageData || '';
+      pendingNoticeImagePath = notice?.imagePath || '';
+      updateNoticeAttachmentPreview();
       $('noticeModal').classList.remove('hidden');
       $('noticeModalBackdrop').classList.remove('hidden');
       setTimeout(() => $('noticeTitle').focus(), 0);
@@ -978,6 +1008,8 @@
 
     function closeNoticeModal() {
       editingNoticeId = null;
+      pendingNoticeImageData = '';
+      pendingNoticeImagePath = '';
       $('noticeModal').classList.add('hidden');
       $('noticeModalBackdrop').classList.add('hidden');
     }
@@ -991,10 +1023,17 @@
       const now = nowISO();
       const existing = editingNoticeId ? state.notices.find(row => row.id === editingNoticeId) : null;
       const previous = existing ? { ...existing } : null;
-      const notice = existing || { id: makeId('notice'), createdAt: now };
-      Object.assign(notice, { type, title, content, author, updatedAt: now });
+      const notice = existing || { id: makeId('notice'), comments: [], createdAt: now };
       $('saveNoticeBtn').disabled = true;
       try {
+        let imageData = pendingNoticeImageData;
+        let imagePath = pendingNoticeImagePath;
+        if (imageData?.startsWith('data:image/') && state.backend === 'supabase') {
+          const uploaded = await uploadImageToSupabase(notice.id, imageData);
+          imageData = uploaded.imageUrl;
+          imagePath = uploaded.imagePath;
+        }
+        Object.assign(notice, { type, title, content, author, imageData, imagePath, updatedAt: now });
         if (!existing) state.notices.unshift(notice);
         await saveData(true);
         closeNoticeModal();
@@ -1008,6 +1047,28 @@
       } finally {
         $('saveNoticeBtn').disabled = false;
       }
+    }
+
+    function updateNoticeAttachmentPreview() {
+      if (pendingNoticeImageData) {
+        $('noticeAttachmentPreviewImage').src = pendingNoticeImageData;
+        $('noticeAttachmentPreview').classList.remove('hidden');
+      } else {
+        $('noticeAttachmentPreview').classList.add('hidden');
+        $('noticeAttachmentPreviewImage').removeAttribute('src');
+      }
+    }
+
+    function attachNoticeImageFile(file) {
+      if (!file || !file.type.startsWith('image/')) return alert('이미지 파일만 첨부할 수 있습니다.');
+      if (file.size > 3 * 1024 * 1024) return alert('이미지는 3MB 이하로 첨부해 주세요.');
+      const reader = new FileReader();
+      reader.onload = () => {
+        pendingNoticeImageData = String(reader.result || '');
+        pendingNoticeImagePath = '';
+        updateNoticeAttachmentPreview();
+      };
+      reader.readAsDataURL(file);
     }
 
     function editSelectedContent() {
@@ -1244,11 +1305,12 @@
     }
 
     function addComment() {
-      const item = selectedItem();
-      if (!item) return alert('댓글을 남길 질문을 먼저 선택해 주세요.');
+      const item = selectedNotice() || selectedItem();
+      if (!item) return alert('댓글을 남길 질문이나 공지를 먼저 선택해 주세요.');
       const author = $('commentAuthor').value.trim();
       const text = $('commentText').value.trim();
       if (!author || !text) return alert('댓글 작성자와 내용을 입력해 주세요.');
+      if (!Array.isArray(item.comments)) item.comments = [];
       item.comments.push({ id: makeId('comment'), author, text, createdAt: nowISO() });
       saveData();
       $('commentText').value = '';
@@ -1311,19 +1373,22 @@
             <p>${escapeHtml(item.answer)}</p>
           </button>`).join('') : '<div class="empty">등록된 글이 없습니다.</div>';
       } else {
-        const comments = state.items.flatMap(item => item.comments.map(comment => ({ ...comment, itemId: item.id, question: item.question })))
+        const comments = [
+          ...state.items.flatMap(item => item.comments.map(comment => ({ ...comment, targetId: item.id, targetType: 'item', targetTitle: item.question }))),
+          ...state.notices.flatMap(notice => (notice.comments || []).map(comment => ({ ...comment, targetId: notice.id, targetType: 'notice', targetTitle: notice.title })))
+        ]
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         $('activityModalList').innerHTML = comments.length ? comments.map(comment => `
-          <button class="activity-detail-item" data-activity-item="${comment.itemId}">
+          <button class="activity-detail-item" data-activity-target="${comment.targetId}" data-activity-type="${comment.targetType}">
             <strong>${escapeHtml(comment.text)}</strong>
             <span>${formatDate(comment.createdAt)}</span>
-            <p>연결된 질문: ${escapeHtml(comment.question)}</p>
+            <p>연결된 ${comment.targetType === 'notice' ? '공지' : '질문'}: ${escapeHtml(comment.targetTitle)}</p>
           </button>`).join('') : '<div class="empty">등록된 댓글이 없습니다.</div>';
       }
-      document.querySelectorAll('[data-activity-item]').forEach(node => node.onclick = () => {
-        const itemId = node.dataset.activityItem;
+      document.querySelectorAll('[data-activity-item], [data-activity-target]').forEach(node => node.onclick = () => {
         closeActivityModal();
-        selectItem(itemId);
+        if (node.dataset.activityType === 'notice') selectNotice(node.dataset.activityTarget);
+        else selectItem(node.dataset.activityItem || node.dataset.activityTarget);
         $('viewerPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
       $('activityModal').classList.remove('hidden');
@@ -1411,6 +1476,22 @@
     $('saveNoticeBtn').onclick = saveNotice;
     $('closeNoticeModalBtn').onclick = closeNoticeModal;
     $('noticeModalBackdrop').onclick = closeNoticeModal;
+    $('noticeImageInput').addEventListener('change', event => {
+      const file = event.target.files?.[0];
+      if (file) attachNoticeImageFile(file);
+    });
+    $('noticeContent').addEventListener('paste', event => {
+      const imageItem = [...(event.clipboardData?.items || [])].find(item => item.type.startsWith('image/'));
+      if (!imageItem) return;
+      event.preventDefault();
+      attachNoticeImageFile(imageItem.getAsFile());
+    });
+    $('removeNoticeImageBtn').onclick = () => {
+      pendingNoticeImageData = '';
+      pendingNoticeImagePath = '';
+      $('noticeImageInput').value = '';
+      updateNoticeAttachmentPreview();
+    };
     $('closeCategoryModalBtn').onclick = closeCategoryModal;
     $('categoryModalBackdrop').onclick = closeCategoryModal;
     $('recentPostMoreBtn').onclick = () => openActivityModal('posts');
