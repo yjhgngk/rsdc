@@ -535,7 +535,7 @@
       <button class="btn btn-secondary" id="closeNoticeModalBtn" type="button">닫기</button>
     </div>
     <div class="config-grid">
-      <div class="field"><label for="noticeType">구분</label><select id="noticeType"><option value="monthly">이 달의 이슈사항</option><option value="weekly">이 주의 이슈사항(필독)</option></select></div>
+      <div class="field"><label for="noticeType">구분</label><select id="noticeType"><option value="monthly">이 달의 이슈사항</option><option value="weekly">이 주의 이슈사항</option></select></div>
       <div class="field"><label for="noticeAuthor">작성자</label><input type="text" id="noticeAuthor" placeholder="이름"></div>
       <div class="field"><label for="noticeTitle">제목</label><input type="text" id="noticeTitle" placeholder="공지 제목"></div>
       <div class="field">
@@ -808,12 +808,64 @@
     function categoryName(id) { return state.categories.find(category => category.id === id)?.name || '미분류'; }
     function selectedItem() { return state.items.find(item => item.id === state.selectedItemId) || null; }
     function selectedNotice() { return state.notices.find(notice => notice.id === state.selectedNoticeId) || null; }
+
+    const SEARCH_STOP_WORDS = new Set(['언제', '어디', '어떻게', '무엇', '뭐', '가능', '가능해', '가능한가요', '되나요', '되나요', '되죠', '인가요', '질문', '문의', '알려줘', '알려주세요']);
+    const SEARCH_ENDINGS = ['으로부터', '에서부터', '에게서는', '까지는', '에서는', '으로는', '이라면', '라면', '인가요', '한가요', '할까요', '인가', '나요', '까요', '까지', '부터', '에서', '에게', '으로', '처럼', '보다', '만큼', '은', '는', '이', '가', '을', '를', '의', '에', '도', '만', '와', '과', '로', '요'];
+
+    function normalizeSearchText(value) {
+      return String(value || '').normalize('NFKC').toLowerCase().replace(/[^0-9a-z가-힣]+/g, ' ').trim();
+    }
+
+    function normalizeSearchToken(token) {
+      let result = token;
+      for (const ending of SEARCH_ENDINGS) {
+        if (result.length > ending.length + 1 && result.endsWith(ending)) {
+          result = result.slice(0, -ending.length);
+          break;
+        }
+      }
+      return result;
+    }
+
+    function searchTokens(value) {
+      return [...new Set(normalizeSearchText(value).split(/\s+/).map(normalizeSearchToken).filter(token => token.length >= 2 && !SEARCH_STOP_WORDS.has(token)))];
+    }
+
+    function fieldMatchScore(queryToken, fieldText, weight) {
+      if (!fieldText) return 0;
+      if (fieldText.includes(queryToken)) return weight;
+      const fieldTokens = searchTokens(fieldText);
+      return fieldTokens.some(token => token.includes(queryToken) || (queryToken.length >= 3 && queryToken.includes(token))) ? Math.max(1, weight - 1) : 0;
+    }
+
     function filteredItems() {
-      const keyword = state.search.trim().toLowerCase();
-      return [...state.items]
-        .filter(item => state.selectedCategoryId === 'all' || item.categoryId === state.selectedCategoryId)
-        .filter(item => !keyword || `${item.question} ${item.answer} ${item.author}`.toLowerCase().includes(keyword))
-        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      const keyword = normalizeSearchText(state.search);
+      const queryTokens = searchTokens(keyword);
+      const rows = state.items
+        .filter(item => state.selectedCategoryId === 'all' || item.categoryId === state.selectedCategoryId);
+      if (!keyword) return rows.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      return rows.map(item => {
+        const question = normalizeSearchText(item.question);
+        const answer = normalizeSearchText(item.answer);
+        const author = normalizeSearchText(item.author);
+        const category = normalizeSearchText(categoryName(item.categoryId));
+        let matchedTokens = 0;
+        let score = question.includes(keyword) ? 30 : (answer.includes(keyword) ? 18 : 0);
+        queryTokens.forEach(token => {
+          const tokenScore = Math.max(
+            fieldMatchScore(token, question, 8),
+            fieldMatchScore(token, answer, 5),
+            fieldMatchScore(token, author, 3),
+            fieldMatchScore(token, category, 3)
+          );
+          if (tokenScore) matchedTokens += 1;
+          score += tokenScore;
+        });
+        return { item, score, matchedTokens };
+      })
+        .filter(result => result.score > 0 && result.matchedTokens >= Math.min(2, Math.max(1, queryTokens.length)))
+        .sort((a, b) => b.score - a.score || new Date(b.item.updatedAt) - new Date(a.item.updatedAt))
+        .map(result => result.item);
     }
 
     function renderFilters() {
@@ -885,7 +937,7 @@
       const rows = state.notices
         .filter(notice => notice.type === state.noticeListType)
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      $('issueArchiveTitle').textContent = state.noticeListType === 'weekly' ? '이 주의 이슈사항(필독) 전체 목록' : '이 달의 이슈사항 전체 목록';
+      $('issueArchiveTitle').textContent = state.noticeListType === 'weekly' ? '이 주의 이슈사항 전체 목록' : '이 달의 이슈사항 전체 목록';
       $('issueArchiveList').innerHTML = rows.length ? rows.map(notice => `
         <button class="issue-archive-item" data-archive-notice="${notice.id}" type="button">
           <strong>${escapeHtml(notice.title)}</strong>
@@ -975,7 +1027,7 @@
     function renderViewer() {
       const notice = selectedNotice();
       if (notice) {
-        $('viewQuestionLabel').textContent = notice.type === 'weekly' ? '필독' : '공지';
+        $('viewQuestionLabel').textContent = '공지';
         $('viewAnswerLabel').textContent = '내용';
         $('viewQuestion').textContent = notice.title;
         $('viewQuestion').classList.remove('viewer-empty');
