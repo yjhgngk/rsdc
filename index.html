@@ -210,11 +210,16 @@
     .issue-list { display: grid; }
     .issue-item { width: 100%; padding: 8px 0; overflow: hidden; color: var(--text); text-align: left; background: transparent; border: 0; border-bottom: 1px solid var(--line); text-overflow: ellipsis; white-space: nowrap; }
     .issue-item:hover { color: var(--primary); background: var(--surface-soft); }
-    .issue-action-group { display: flex; flex: 0 0 auto; gap: 4px; }
+    .issue-group .sidebar-section-head { min-height: 24px; align-items: center; }
+    .issue-group .sidebar-section-head h3 { line-height: 24px; }
+    .issue-action-group { display: flex; flex: 0 0 auto; align-items: center; gap: 0; }
     .issue-action-btn {
-      min-width: 28px;
-      height: 26px;
-      padding: 0 7px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 4px;
       color: var(--text);
       background: transparent;
       border: 0;
@@ -224,7 +229,7 @@
     }
     .issue-action-btn:hover { color: var(--primary); background: var(--primary-soft); box-shadow: none; }
     .issue-list-icon { width: 14px; height: 14px; vertical-align: middle; }
-    .issue-write-btn { min-width: 28px; padding-inline: 7px; }
+    .issue-write-btn { min-width: 22px; padding-inline: 4px; }
     .issue-archive { padding: 14px 16px; }
     .issue-archive-list { display: grid; }
     .issue-archive-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; width: 100%; padding: 11px 4px; color: var(--text); text-align: left; background: transparent; border: 0; border-bottom: 1px solid var(--line); }
