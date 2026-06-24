@@ -297,7 +297,9 @@
     .field label { color: var(--sub); font-weight: 600; }
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .category-input-row { display: grid; grid-template-columns: 1fr; gap: 7px; }
-    .category-input-row.custom-active { grid-template-columns: minmax(120px, .8fr) minmax(140px, 1fr) auto; }
+    .category-input-row > * { min-width: 0; }
+    .category-input-row.custom-active { grid-template-columns: minmax(84px, .8fr) minmax(0, 1.2fr) 42px; }
+    .category-input-row.custom-active .btn { width: 42px; padding-inline: 3px; white-space: nowrap; }
     .editor-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
     .editor-note { padding: 10px; color: var(--sub); line-height: 1.6; background: var(--surface-soft); border-radius: 8px; }
     .revision-panel { padding-top: 12px; border-top: 1px solid var(--line); }
