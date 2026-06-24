@@ -202,6 +202,9 @@
     .mini-item:hover { color: var(--text); background: var(--surface-soft); }
     .mini-item strong, .mini-item span { display: block; width: 100%; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .mini-item span { margin-top: 3px; color: var(--sub); }
+    .sidebar-section .mini-item strong { font-weight: 400; }
+    .sidebar-section .icon-btn { width: auto; height: auto; padding: 0; background: transparent; border: 0; border-radius: 0; box-shadow: none; font-size: 12pt; font-weight: 400; }
+    .sidebar-section .icon-btn:hover { color: var(--primary); background: transparent; box-shadow: none; }
     .issue-board { margin-top: 16px; }
     .issue-group + .issue-group { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
     .issue-list { display: grid; }
@@ -972,14 +975,14 @@
 
     function renderSidebarActivity() {
       const posts = [...state.items].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 4);
-      $('recentPostList').innerHTML = posts.length ? posts.map(item => `<button class="mini-item" data-recent-item="${item.id}"><strong>${escapeHtml(item.question)}</strong><span>${formatDate(item.createdAt)}</span></button>`).join('') : '<span class="muted">등록된 글이 없습니다.</span>';
+      $('recentPostList').innerHTML = posts.length ? posts.map(item => `<button class="mini-item" data-recent-item="${item.id}"><strong>${escapeHtml(item.question)}</strong></button>`).join('') : '<span class="muted">등록된 글이 없습니다.</span>';
 
       const comments = [
         ...state.items.flatMap(item => item.comments.map(comment => ({ ...comment, targetId: item.id, targetType: 'item' }))),
         ...state.notices.flatMap(notice => (notice.comments || []).map(comment => ({ ...comment, targetId: notice.id, targetType: 'notice' })))
       ]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 3);
-      $('recentCommentList').innerHTML = comments.length ? comments.map(comment => `<button class="mini-item" data-comment-target="${comment.targetId}" data-comment-type="${comment.targetType}"><strong>${escapeHtml(comment.text)}</strong><span>${formatDate(comment.createdAt)}</span></button>`).join('') : '<span class="muted">등록된 댓글이 없습니다.</span>';
+      $('recentCommentList').innerHTML = comments.length ? comments.map(comment => `<button class="mini-item" data-comment-target="${comment.targetId}" data-comment-type="${comment.targetType}"><strong>${escapeHtml(comment.text)}</strong></button>`).join('') : '<span class="muted">등록된 댓글이 없습니다.</span>';
 
       document.querySelectorAll('[data-recent-item]').forEach(node => node.onclick = () => {
         selectItem(node.dataset.recentItem);
